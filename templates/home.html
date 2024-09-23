@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>XYZ Household Services</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        body {
+            background: url("{{ url_for('static', filename='hom.jpg') }}") no-repeat center center fixed;
+            background-size: cover;
+            color: #fff;
+            font-family: 'Arial', sans-serif;
+        }
+        .navbar {
+            background-color: rgba(0, 0, 0, 0.7);
+        }
+        .navbar-brand {
+            font-size: 1.5em;
+            font-weight: bold;
+        }
+        .navbar-nav .nav-link {
+            color: #fff !important;
+        }
+        .container {
+            text-align: center;
+            margin-top: 15%;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 20px;
+            border-radius: 10px;
+        }
+        h1 {
+            font-size: 3em;
+            animation: fadeIn 2s ease-in-out;
+        }
+        p {
+            font-size: 1.2em;
+            margin: 20px 0;
+        }
+        .btn-primary {
+            background-color: #ff9800;
+            border: none;
+            padding: 10px 20px;
+            font-size: 1.2em;
+            transition: background-color 0.3s ease;
+        }
+        .btn-primary:hover {
+            background-color: #e68900;
+        }
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <a class="navbar-brand" href="#">XYZ</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="servicesDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        Services
+                    </a>
+                    <div class="dropdown-menu" aria-labelledby="servicesDropdown">
+                        <a class="dropdown-item" href="#">Plumbing</a>
+                        <a class="dropdown-item" href="#">Electrical</a>
+                        <a class="dropdown-item" href="#">Cleaning</a>
+                    </div>
+                </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="locationsDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        Locations
+                    </a>
+                    <div class="dropdown-menu" aria-labelledby="locationsDropdown">
+                        <a class="dropdown-item" href="#">New York</a>
+                        <a class="dropdown-item" href="#">Los Angeles</a>
+                        <a class="dropdown-item" href="#">Chicago</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">About Us</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+    <div class="container">
+        <h1 class="mt-5">Welcome to XYZ Household Services</h1>
+        <p>"Your comfort is our priority"</p>
+        <a href="{{ url_for('login') }}" class="btn btn-primary mt-3">Get Started</a>
+    </div>
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        body {
+            background: url('https://source.unsplash.com/1600x900/?login,background') no-repeat center center fixed;
+            background-size: cover;
+            color: #fff;
+            font-family: 'Arial', sans-serif;
+            background-color: #00aeff; /* Blue background color */
+        }
+        .container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .login-box {
+            background: rgba(0, 0, 0, 0.8);
+            padding: 40px;
+            border-radius: 15px;
+            text-align: center;
+            width: 100%;
+            max-width: 450px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+        }
+        h2 {
+            margin-bottom: 30px;
+            font-size: 2em;
+        }
+        .btn-login {
+            background-color: #ff9800;
+            border: none;
+            padding: 15px 20px;
+            font-size: 1.2em;
+            margin: 20px 0;
+            width: 100%;
+            transition: background-color 0.3s ease;
+        }
+        .btn-login:hover {
+            background-color: #e68900;
+        }
+        .signup-link {
+            color: #ff9800;
+            text-decoration: none;
+        }
+        .signup-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="login-box">
+            <a href="{{ url_for('service_professional_signup') }}" class="signup-link" style="float: right;">Signup for Service Professional</a>
+            <h2>Login</h2>
+            <form method="POST" action="{{ url_for('login') }}">
+                <div class="form-group">
+                    <input type="email" class="form-control" name="email" placeholder="Email" required>
+                </div>
+                <div class="form-group">
+                    <input type="text" class="form-control" name="username" placeholder="Username" required>
+                </div>
+                <div class="form-group">
+                    <input type="password" class="form-control" name="password" placeholder="Password" required>
+                </div>
+                <button type="submit" class="btn btn-login">Login</button>
+            </form>
+            <a href="{{ url_for('customer_signup') }}" class="signup-link">Create account?</a>
+        </div>
+    </div>
+</body>
+</html>
