@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     <style>
         body {
             background: url('https://source.unsplash.com/1600x900/?login,background') no-repeat center center fixed;
@@ -17,7 +18,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
+            height: calc(100vh - 56px); /* Adjust height to account for navbar */
         }
         .login-box {
             background: rgba(0, 0, 0, 0.8);
@@ -51,9 +52,31 @@
         .signup-link:hover {
             text-decoration: underline;
         }
+        .btn-back {
+            background-color: transparent;
+            border: none;
+            font-size: 1.5em;
+            color: #ff9800;
+            margin-right: 10px;
+            transition: color 0.3s ease;
+        }
+        .btn-back:hover {
+            color: #e68900;
+        }
     </style>
 </head>
 <body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <a href="{{ url_for('home') }}" class="btn btn-back"><i class="fas fa-arrow-left"></i></a>
+        <a class="navbar-brand" href="#">XYZ Solutions</a>
+        <div class="collapse navbar-collapse justify-content-center">
+            <span class="navbar-text">
+                Login Page
+            </span>
+        </div>
+    </nav>
+
     <div class="container">
         <div class="login-box">
             <a href="{{ url_for('service_professional_signup') }}" class="signup-link" style="float: right;">Signup for Service Professional</a>
