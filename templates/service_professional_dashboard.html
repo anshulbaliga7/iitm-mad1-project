@@ -5,9 +5,42 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Service Professional Dashboard</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        /* Custom styles for the navbar */
+        .navbar {
+            background-color: violet; /* Violet background */
+        }
+        .navbar .nav-link {
+            color: white; /* White text */
+            margin-left: 30px; /* Spacing between nav links */
+            font-weight: bold; /* Bold text */
+        }
+        .navbar .nav-link:hover {
+            color: #f8f9fa; /* Slightly lighter on hover */
+        }
+        .container {
+            margin-top: 20px; /* Space above the container */
+        }
+        .table {
+            margin-top: 20px; /* Space between tables */
+            border: 1px solid #dee2e6; /* Border for the table */
+            border-radius: 0.25rem; /* Rounded corners */
+            overflow: hidden; /* Prevent overflow */
+        }
+        .table th, .table td {
+            vertical-align: middle; /* Center align text vertically */
+        }
+        .table th {
+            background-color: #f8f9fa; /* Light background for header */
+            font-weight: bold; /* Bold header text */
+        }
+        .table tbody tr:hover {
+            background-color: #f1f1f1; /* Highlight row on hover */
+        }
+    </style>
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <nav class="navbar navbar-expand-lg navbar-light">
         <a class="navbar-brand" href="#">Service Professional Dashboard</a>
         <div class="collapse navbar-collapse">
             <ul class="navbar-nav mr-auto">
@@ -18,10 +51,15 @@
             </ul>
         </div>
     </nav>
-
+    <div class="container">
+        <h1 class="text-center mt-5">Service Professional Dashboard</h1>
+        <div class="text-right mb-3"> <!-- Aligns the button to the right -->
+            <button class="btn btn-info" data-toggle="modal" data-target="#viewProfileModal">Edit Profile</button>
+        </div>
+    </div>
     <div class="container">
         <h2 class="mt-5">Today's Services</h2>
-        <table class="table mt-4">
+        <table class="table table-striped table-bordered mt-4">
             <thead>
                 <tr>
                     <th>ID</th>
@@ -35,7 +73,9 @@
             <tbody>
                 {% for service in today_services %}
                 <tr>
-                    <td>{{ service.id }}</td>
+                    <td>
+                        <a href="#" data-toggle="modal" data-target="#viewServiceModal{{ service.id }}">{{ service.id }}</a>
+                    </td>
                     <td>{{ service.service.name }}</td>
                     <td>{{ service.customer.name }}</td>
                     <td>{{ service.date_of_request }}</td>
@@ -49,12 +89,37 @@
                         </form>
                     </td>
                 </tr>
+
+                <!-- View Service Modal -->
+                <div class="modal fade" id="viewServiceModal{{ service.id }}" tabindex="-1" role="dialog" aria-labelledby="viewServiceModalLabel{{ service.id }}" aria-hidden="true">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="viewServiceModalLabel{{ service.id }}">Service Details</h5>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <div class="modal-body">
+                                <p><strong>Service Name:</strong> {{ service.service.name }}</p>
+                                <p><strong>Description:</strong> {{ service.service.description }}</p>
+                                <p><strong>Base Price:</strong> {{ service.service.price }}</p>
+                                <p><strong>Time Required:</strong> {{ service.service.time_required }}</p>
+                                <p><strong>Is Active:</strong> {{ 'Yes' if service.service.is_active else 'No' }}</p>
+                                <p><strong>Category:</strong> {{ service.service.category }}</p>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 {% endfor %}
             </tbody>
         </table>
 
         <h2 class="mt-5">Closed Services</h2>
-        <table class="table mt-4">
+        <table class="table table-striped table-bordered mt-4">
             <thead>
                 <tr>
                     <th>ID</th>
@@ -67,15 +132,93 @@
             <tbody>
                 {% for service in closed_services %}
                 <tr>
-                    <td>{{ service.id }}</td>
+                    <td>
+                        <a href="#" data-toggle="modal" data-target="#viewClosedServiceModal{{ service.id }}">{{ service.id }}</a>
+                    </td>
                     <td>{{ service.service.name }}</td>
                     <td>{{ service.customer.name }}</td>
                     <td>{{ service.date_of_request }}</td>
                     <td>{{ service.service_status }}</td>
                 </tr>
+
+                <!-- View Closed Service Modal -->
+                <div class="modal fade" id="viewClosedServiceModal{{ service.id }}" tabindex="-1" role="dialog" aria-labelledby="viewClosedServiceModalLabel{{ service.id }}" aria-hidden="true">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="viewClosedServiceModalLabel{{ service.id }}">Closed Service Details</h5>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <div class="modal-body">
+                                <p><strong>Service Name:</strong> {{ service.service.name }}</p>
+                                <p><strong>Description:</strong> {{ service.service.description }}</p>
+                                <p><strong>Base Price:</strong> {{ service.service.price }}</p>
+                                <p><strong>Time Required:</strong> {{ service.service.time_required }}</p>
+                                <p><strong>Is Active:</strong> {{ 'Yes' if service.service.is_active else 'No' }}</p>
+                                <p><strong>Category:</strong> {{ service.service.category }}</p>
+                                <p><strong>Closed Date:</strong> {{ service.date_of_request }}</p>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 {% endfor %}
             </tbody>
         </table>
+    </div>
+
+    <!-- Profile Modal -->
+    <div class="modal fade" id="viewProfileModal" tabindex="-1" role="dialog" aria-labelledby="viewProfileModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <form action="{{ url_for('update_profile') }}" method="POST"> <!-- Form for updating profile -->
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="viewProfileModalLabel">Edit Profile</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label for="name">Name</label>
+                            <input type="text" class="form-control" id="name" name="name" value="{{ professional.name }}" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="email">Email</label>
+                            <input type="email" class="form-control" id="email" name="email" value="{{ professional.email }}" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="phone_number">Phone Number</label>
+                            <input type="text" class="form-control" id="phone_number" name="phone_number" value="{{ professional.phone_number }}" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="address">Address</label>
+                            <input type="text" class="form-control" id="address" name="address" value="{{ professional.address }}" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="pincode">Pincode</label>
+                            <input type="text" class="form-control" id="pincode" name="pincode" value="{{ professional.pincode }}" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="experience">Experience</label>
+                            <input type="text" class="form-control" id="experience" name="experience" value="{{ professional.experience }}" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="service_name">Service Name</label>
+                            <input type="text" class="form-control" id="service_name" name="service_name" value="{{ professional.service_name }}" required>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-primary">Update</button> <!-- Submit button -->
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
 
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>

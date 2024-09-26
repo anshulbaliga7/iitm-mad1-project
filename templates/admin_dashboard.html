@@ -11,12 +11,37 @@
         }
         .navbar .nav-link {
             color: white; /* White text */
+            margin-left: 165px; /* Spacing between nav links */
+            font-weight: bold; /* Bold text */
         }
         .navbar .nav-link:hover {
             color: #f8f9fa; /* Slightly lighter on hover */
         }
         .table {
             margin-top: 20px; /* Space between tables */
+            border: 1px solid #dee2e6; /* Border for the table */
+            border-radius: 0.25rem; /* Rounded corners */
+            overflow: hidden; /* Prevent overflow */
+        }
+        .table th, .table td {
+            vertical-align: middle; /* Center align text vertically */
+        }
+        .table th {
+            background-color: #f8f9fa; /* Light background for header */
+            font-weight: bold; /* Bold header text */
+        }
+        .table tbody tr:hover {
+            background-color: #f1f1f1; /* Highlight row on hover */
+        }
+        .container {
+            margin-top: 20px; /* Space above the container */
+        }
+        .modal-header {
+            background-color: #007bff; /* Blue background for modal header */
+            color: white; /* White text for modal header */
+        }
+        .modal-footer {
+            justify-content: space-between; /* Space between buttons in modal footer */
         }
     </style>
 </head>
@@ -32,10 +57,12 @@
             </ul>
         </div>
     </nav>
-
+    <div class="text-center">
+        <h1>Admin Dashboard</h1>
+    </div>
     <div class="container mt-4">
         <h2>Services</h2>
-        <table class="table">
+        <table class="table table-striped table-bordered">
             <thead>
                 <tr>
                     <th>ID</th>
@@ -95,6 +122,7 @@
                 {% endfor %}
             </tbody>
         </table>
+
         <button class="btn btn-success" data-toggle="modal" data-target="#newServiceModal">+ New Service</button>
 
         <!-- New Service Modal -->
@@ -197,7 +225,7 @@
         </div>
         {% endfor %}
 
-        <h2>Professionals</h2>
+        <h2 class="mt-4">Professionals</h2> <!-- Added margin-top for spacing -->
         <table class="table">
             <thead>
                 <tr>
@@ -206,6 +234,7 @@
                     <th>Email</th>
                     <th>Experience</th>
                     <th>Service Name</th>
+                    <th>Approval Status</th>
                     <th>Action</th>
                 </tr>
             </thead>
@@ -219,6 +248,7 @@
                     <td>{{ professional.email }}</td>
                     <td>{{ professional.experience }}</td>
                     <td>{{ professional.service_name }}</td>
+                    <td>{{ 'Approved' if professional.approval == 1 else ('Rejected' if professional.approval == 0 else 'Pending') }}</td> <!-- New Approval Status Column -->
                     <td>
                         <form action="{{ url_for('approve_professional', professional_id=professional.id) }}" method="POST" style="display:inline;">
                             <button type="submit" class="btn btn-success btn-sm">Approve</button>
@@ -262,7 +292,7 @@
             </tbody>
         </table>
 
-        <h2>Service Requests</h2>
+        <h2 class="mt-4">Service Requests</h2> <!-- Added margin-top for spacing -->
         <table class="table">
             <thead>
                 <tr>

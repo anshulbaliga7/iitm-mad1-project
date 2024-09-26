@@ -5,10 +5,58 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Service Professional Search</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        /* Custom styles for the navbar */
+        .navbar {
+            background-color: violet; /* Violet background */
+        }
+        .navbar .nav-link {
+            color: white; /* White text */
+            margin-left: 150px; /* Spacing between nav links */
+            font-weight: bold; /* Bold text */
+        }
+        .navbar .nav-link:hover {
+            color: #f8f9fa; /* Slightly lighter on hover */
+        }
+        .container {
+            margin-top: 20px; /* Space above the container */
+        }
+        .table {
+            margin-top: 20px; /* Space between tables */
+            border: 1px solid #dee2e6; /* Border for the table */
+            border-radius: 0.25rem; /* Rounded corners */
+            overflow: hidden; /* Prevent overflow */
+        }
+        .table th, .table td {
+            vertical-align: middle; /* Center align text vertically */
+        }
+        .table th {
+            background-color: #f8f9fa; /* Light background for header */
+            font-weight: bold; /* Bold header text */
+        }
+        .table tbody tr:hover {
+            background-color: #f1f1f1; /* Highlight row on hover */
+        }
+        .form-group {
+            margin-bottom: 1.5rem; /* Increased spacing for form groups */
+        }
+    </style>
 </head>
 <body>
+    <nav class="navbar navbar-expand-lg navbar-light">
+        <a class="navbar-brand" href="#">Service Professional Dashboard</a>
+        <div class="collapse navbar-collapse">
+            <ul class="navbar-nav mr-auto">
+                <li class="nav-item"><a class="nav-link" href="{{ url_for('service_professional_dashboard') }}">Home</a></li>
+                <li class="nav-item"><a class="nav-link" href="{{ url_for('service_professional_search') }}">Search</a></li>
+                <li class="nav-item"><a class="nav-link" href="#">Summary</a></li>
+                <li class="nav-item"><a class="nav-link" href="{{ url_for('home') }}">Logout</a></li>
+            </ul>
+        </div>
+    </nav>
+
     <div class="container mt-5">
-        <h2>Search Service Requests</h2>
+        <h2 class="text-center">Search Service Requests</h2>
         <form action="{{ url_for('service_professional_search') }}" method="POST">
             <div class="form-group">
                 <label for="search_by">Search By</label>
@@ -22,20 +70,23 @@
                 <label for="search_text">Search Text</label>
                 <input type="text" class="form-control" id="search_text" name="search_text" required>
             </div>
-            <button type="submit" class="btn btn-primary">Search</button>
+            <button type="submit" class="btn btn-primary btn-block">Search</button> <!-- Full-width button -->
         </form>
 
         {% if results %}
         <h2 class="mt-5">Search Results</h2>
-        <table class="table mt-4">
+        <table class="table table-striped table-bordered mt-4">
             <thead>
                 <tr>
                     <th>ID</th>
                     <th>Customer Name</th>
+                    <th>Professional Name</th> <!-- New column for Professional Name -->
                     <th>Contact Phone</th>
+                    <th>Service Name</th>
                     <th>Location</th>
-                    <th>Pincode</th>
-                    <th>Date</th>
+                    <th>Date of Request</th>
+                    <th>Service Status</th>
+                    <th>Remarks</th>
                 </tr>
             </thead>
             <tbody>
@@ -43,10 +94,13 @@
                 <tr>
                     <td>{{ request.id }}</td>
                     <td>{{ request.customer.name }}</td>
+                    <td>{{ request.professional.name if request.professional else 'N/A' }}</td> <!-- Display Professional Name -->
                     <td>{{ request.customer.phone_number }}</td>
+                    <td>{{ request.customer.service_name }}</td>
                     <td>{{ request.location }}</td>
-                    <td>{{ request.customer.pincode }}</td>
                     <td>{{ request.date_of_request }}</td>
+                    <td>{{ request.service_status }}</td>
+                    <td>{{ request.remarks }}</td>
                 </tr>
                 {% endfor %}
             </tbody>

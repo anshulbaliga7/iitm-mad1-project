@@ -7,10 +7,131 @@
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
 </head>
 <body>
-    <div class="container">
-        <h2 class="mt-5">Customer Dashboard</h2>
-        <p>Welcome, {{ session['user_id'] }}!</p>
-        <!-- Add customer functionalities here -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <a class="navbar-brand" href="#">Customer Dashboard</a>
+        <div class="collapse navbar-collapse">
+            <ul class="navbar-nav mr-auto">
+                <li class="nav-item"><a class="nav-link" href="{{ url_for('customer_dashboard') }}">Home</a></li>
+                <li class="nav-item"><a class="nav-link" href="{{ url_for('service_professional_search') }}">Search</a></li>
+                <li class="nav-item"><a class="nav-link" href="#">Summary</a></li>
+                <li class="nav-item"><a class="nav-link" href="{{ url_for('home') }}">Logout</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container mt-5">
+        <h2>Welcome, {{ session['user_id'] }}!</h2>
+
+        <div class="rounded border p-4 mb-4">
+            <h4>Available Services</h4>
+            <ul class="list-group">
+                {% for service in services %}
+                <li class="list-group-item">
+                    <a href="#" data-toggle="modal" data-target="#serviceModal{{ service.id }}">{{ service.name }}</a>
+                </li>
+
+                <!-- Service Modal -->
+                <div class="modal fade" id="serviceModal{{ service.id }}" tabindex="-1" role="dialog" aria-labelledby="serviceModalLabel{{ service.id }}" aria-hidden="true">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="serviceModalLabel{{ service.id }}">{{ service.name }}</h5>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <div class="modal-body">
+                                <p><strong>Description:</strong> {{ service.description }}</p>
+                                <p><strong>Base Price:</strong> {{ service.price }}</p>
+                                <p><strong>Time Required:</strong> {{ service.time_required }}</p>
+                            </div>
+                            <div class="modal-footer">
+                                <form action="{ url_for('home')}" method="POST">
+                                    <button type="submit" class="btn btn-primary">Book</button>
+                                </form>
+                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <h4>Service History</h4>
+        <table class="table mt-4">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Service Name</th>
+                    <th>Professional Name</th>
+                    <th>Phone Number</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for request in service_history %}
+                <tr>
+                    <td>{{ request.id }}</td>
+                    <td>{{ request.service.name }}</td>
+                    <td>{{ request.professional.name if request.professional else 'N/A' }}</td>
+                    <td>{{ request.professional.phone_number if request.professional else 'N/A' }}</td>
+                    <td>{{ request.service_status }}</td>
+                    <td>
+                        {% if request.service_status == 'Requested' %}
+                        <button class="btn btn-warning btn-sm" data-toggle="modal" data-target="#closeServiceModal{{ request.id }}">Close it?</button>
+                        {% endif %}
+                    </td>
+                </tr>
+
+                <!-- Close Service Modal -->
+                <div class="modal fade" id="closeServiceModal{{ request.id }}" tabindex="-1" role="dialog" aria-labelledby="closeServiceModalLabel{{ request.id }}" aria-hidden="true">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="closeServiceModalLabel{{ request.id }}">Close Service Request</h5>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <div class="modal-body">
+                                <p><strong>Service Name:</strong> {{ request.service.name }}</p>
+                                <p><strong>Description:</strong> {{ request.service.description }}</p>
+                                <p><strong>Date:</strong> {{ request.date_of_request }}</p>
+                                <p><strong>Professional Name:</strong> {{ request.professional.name if request.professional else 'N/A' }}</p>
+                                <p><strong>Contact Number:</strong> {{ request.professional.phone_number if request.professional else 'N/A' }}</p>
+                                <p><strong>Service Rating:</strong></p>
+                                <div>
+                                    <select class="form-control" id="serviceRating{{ request.id }}">
+                                        <option value="1">1 Star</option>
+                                        <option value="2">2 Stars</option>
+                                        <option value="3">3 Stars</option>
+                                        <option value="4">4 Stars</option>
+                                        <option value="5">5 Stars</option>
+                                    </select>
+                                </div>
+                                <div class="form-group mt-3">
+                                    <label for="remarks">Remarks (if any):</label>
+                                    <textarea class="form-control" id="remarks" rows="3"></textarea>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <form action="{{ url_for('home')}}" method="POST">
+                                    <button type="submit" class="btn btn-primary">Submit</button>
+                                </form>
+                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
+
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </body>
 </html>

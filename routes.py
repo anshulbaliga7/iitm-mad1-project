@@ -131,20 +131,46 @@ def admin_dashboard():
 @app.route('/service_professional_dashboard')
 def service_professional_dashboard():
     today = datetime.today().date()
+    current_professional_id = 3
 
+    # Fetch the professional's details
+    professional = User.query.filter_by(id=current_professional_id, role='service_professional').first()
     # Fetch today's active services (is_active = 1)
     today_services = ServiceRequest.query.join(Service).filter(
         Service.is_active == True,
-        ServiceRequest.date_of_request >= today
+        #ServiceRequest.date_of_request >= today
     ).all()
 
     # Fetch closed services (is_active = 0)
     closed_services = ServiceRequest.query.join(Service).filter(
         Service.is_active == False,
-        ServiceRequest.service_status == 'Closed'
+        #ServiceRequest.service_status == 'Closed'
     ).all()
 
-    return render_template('service_professional_dashboard.html', today_services=today_services, closed_services=closed_services)
+    return render_template('service_professional_dashboard.html', today_services=today_services, closed_services=closed_services, professional=professional)
+
+@app.route('/update_profile', methods=['POST'])
+def update_profile():
+    # Assuming you have a way to get the current professional's ID
+    current_professional_id = 3
+
+    # Fetch the professional's details
+    professional = User.query.get(current_professional_id)
+
+    # Update the professional's details
+    professional.name = request.form['name']
+    professional.email = request.form['email']
+    professional.phone_number = request.form['phone_number']
+    professional.address = request.form['address']
+    professional.pincode = request.form['pincode']
+    professional.experience = request.form['experience']
+    professional.service_name = request.form['service_name']
+
+    # Commit the changes to the database
+    db.session.commit()
+
+    # Redirect back to the dashboard or show a success message
+    return redirect(url_for('service_professional_dashboard'))
 
 @app.route('/accept_service/<int:service_id>', methods=['POST'])
 def accept_service(service_id):
@@ -171,9 +197,19 @@ def reject_service(service_id):
 
 @app.route('/customer_dashboard')
 def customer_dashboard():
-    if 'user_id' in session and session['role'] == 'customer':
-        return render_template('customer_dashboard.html')
-    return redirect(url_for('home'))
+    user_id = 2
+
+    # Fetch all available services
+    services = Service.query.filter_by(is_active=True).all()  # Assuming you want only active services
+
+    # Fetch service history for the customer
+    service_history = ServiceRequest.query \
+        .join(Service, ServiceRequest.service_id == Service.id) \
+        .join(User, ServiceRequest.customer_id == User.id) \
+        .filter(ServiceRequest.customer_id == user_id) \
+        .all()
+
+    return render_template('customer_dashboard.html', services=services, service_history=service_history)
 
 @app.route('/admin_login', methods=['GET', 'POST'])
 def admin_login():
@@ -237,23 +273,23 @@ def new_service():
 
     # Now create a new service request for the newly created service
     # Assuming you have a customer_id available (you might need to get this from the form or session)
-    customer_id = 2  # Get the customer ID from the form
-    service_request = ServiceRequest(
-        service_id=new_service.id,  # Use the ID of the newly created service
-        customer_id=customer_id,
-        professional_id=None,  # Set to None or the appropriate professional ID if applicable
-        date_of_request=datetime.now(),  # Set the current date and time
-        service_status='Requested',  # Initial status
-        remarks=None,  # Optional remarks
-        location=None,  # Optional location
-        cost=None  # Optional cost, can be set later
-    )
+    # customer_id = 2  # Get the customer ID from the form
+    # service_request = ServiceRequest(
+    #     service_id=new_service.id,  # Use the ID of the newly created service
+    #     customer_id=customer_id,
+    #     professional_id=None,  # Set to None or the appropriate professional ID if applicable
+    #     date_of_request=datetime.now(),  # Set the current date and time
+    #     service_status='Requested',  # Initial status
+    #     remarks=None,  # Optional remarks
+    #     location=None,  # Optional location
+    #     cost=None  # Optional cost, can be set later
+    # )
 
     # Add the new service request to the session
-    db.session.add(service_request)
-    db.session.commit()  # Commit to save the service request
+    # db.session.add(service_request)
+    # db.session.commit()  # Commit to save the service request
 
-    flash('New service and service request added successfully!')
+    # flash('New service and service request added successfully!')
     return redirect(url_for('admin_dashboard'))
 
 @app.route('/admin/edit_service/<int:service_id>', methods=['POST'])
@@ -336,16 +372,18 @@ def admin_search():
                 results = Service.query.filter(Service.name.contains(search_text)).all()  # Fetch services by name
 
         elif search_type == 'customer':
-            results = ServiceRequest.query.join(User).filter(User.name.contains(search_text)).all()
+            results = User.query.filter(User.name.contains(search_text)).all()
 
         elif search_type == 'professional':
-            results = ServiceRequest.query.join(User).filter(User.name.contains(search_text)).all()
+            results = User.query.filter(User.name.contains(search_text)).all()
 
         elif search_type == 'service_request':
             if search_text.lower() == 'assigned':
                 results = ServiceRequest.query.filter(ServiceRequest.service_status == 'Assigned').all()  # Fetch assigned service requests
             elif search_text.lower() == 'closed':
                 results = ServiceRequest.query.filter(ServiceRequest.service_status == 'Closed').all()  # Fetch closed service requests
+            elif search_text.lower() == 'requested':
+                results = ServiceRequest.query.filter(ServiceRequest.service_status == 'Requested').all()  # Fetch closed service requests
             else:
                 results = ServiceRequest.query.filter(ServiceRequest.remarks.contains(search_text)).all()  # Fetch service requests by remarks
 

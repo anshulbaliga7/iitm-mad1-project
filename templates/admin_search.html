@@ -4,9 +4,46 @@
     <meta charset="UTF-8">
     <title>Admin Search</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <style>
+        /* Custom styles for the navbar */
+        .navbar {
+            background-color: violet; /* Violet background */
+        }
+        .navbar .nav-link {
+            color: white; /* White text */
+            margin-left: 165px; /* Spacing between nav links */
+            font-weight: bold; /* Bold text */
+        }
+        .navbar .nav-link:hover {
+            color: #f8f9fa; /* Slightly lighter on hover */
+        }
+        .container {
+            margin-top: 20px; /* Space above the container */
+        }
+        .form-control {
+            border-radius: 0.25rem; /* Rounded corners for input fields */
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Subtle shadow for input fields */
+        }
+        .table {
+            margin-top: 20px; /* Space between tables */
+            border: 1px solid #dee2e6; /* Border for the table */
+            border-radius: 0.25rem; /* Rounded corners */
+            overflow: hidden; /* Prevent overflow */
+        }
+        .table th, .table td {
+            vertical-align: middle; /* Center align text vertically */
+        }
+        .table th {
+            background-color: #f8f9fa; /* Light background for header */
+            font-weight: bold; /* Bold header text */
+        }
+        .table tbody tr:hover {
+            background-color: #f1f1f1; /* Highlight row on hover */
+        }
+    </style>
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <nav class="navbar navbar-expand-lg navbar-light">
         <a class="navbar-brand" href="#">Admin Dashboard</a>
         <div class="collapse navbar-collapse">
             <ul class="navbar-nav mr-auto">
@@ -27,7 +64,7 @@
                     <option value="service">Service</option>
                     <option value="customer">Customer</option>
                     <option value="professional">Professional</option>
-                    <option value="service_request">Service Request</option> <!-- Added option for service requests -->
+                    <option value="service_request">Service Request</option>
                 </select>
             </div>
             <div class="form-group">
@@ -38,15 +75,18 @@
         </form>
 
         {% if results %}
-            <h2>Search Results for "{{ search_text }}" in {{ search_type.capitalize() }}</h2>
+            <h2 class="mt-4">Search Results for "{{ search_text }}" in {{ search_type.capitalize() }}</h2>
             {% if search_type == 'service' %}
-                <table class="table mt-4">
+                <table class="table table-striped table-bordered mt-4">
                     <thead>
                         <tr>
                             <th>ID</th>
                             <th>Service Name</th>
-                            <th>Price</th>
-                            <th>Status</th>
+                            <th>Base Price</th>
+                            <th>Time Required</th>
+                            <th>Description</th>
+                            <th>Is Active</th>
+                            <th>Category</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -55,20 +95,25 @@
                             <td>{{ result.id }}</td>
                             <td>{{ result.name }}</td>
                             <td>{{ result.price }}</td>
+                            <td>{{ result.time_required }}</td>
+                            <td>{{ result.description }}</td>
                             <td>{{ 'Active' if result.is_active else 'Inactive' }}</td>
+                            <td>{{ result.category }}</td>
                         </tr>
                         {% endfor %}
                     </tbody>
                 </table>
 
             {% elif search_type == 'customer' %}
-                <table class="table mt-4">
+                <table class="table table-striped table-bordered mt-4">
                     <thead>
                         <tr>
                             <th>ID</th>
-                            <th>Customer Name</th>
+                            <th>Name</th>
                             <th>Email</th>
                             <th>Phone Number</th>
+                            <th>Address</th>
+                            <th>Pincode</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -78,19 +123,26 @@
                             <td>{{ result.name }}</td>
                             <td>{{ result.email }}</td>
                             <td>{{ result.phone_number }}</td>
+                            <td>{{ result.address }}</td>
+                            <td>{{ result.pincode }}</td>
                         </tr>
                         {% endfor %}
                     </tbody>
                 </table>
 
             {% elif search_type == 'professional' %}
-                <table class="table mt-4">
+                <table class="table table-striped table-bordered mt-4">
                     <thead>
                         <tr>
                             <th>ID</th>
-                            <th>Professional Name</th>
+                            <th>Name</th>
                             <th>Email</th>
+                            <th>Phone Number</th>
+                            <th>Address</th>
+                            <th>Pincode</th>
                             <th>Experience</th>
+                            <th>Service Name</th>
+                            <th>Approval Status</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -99,33 +151,44 @@
                             <td>{{ result.id }}</td>
                             <td>{{ result.name }}</td>
                             <td>{{ result.email }}</td>
+                            <td>{{ result.phone_number }}</td>
+                            <td>{{ result.address }}</td>
+                            <td>{{ result.pincode }}</td>
                             <td>{{ result.experience }}</td>
+                            <td>{{ result.service_name }}</td>
+                            <td>{{ 'Rejected' if result.approval == 0 else 'Accepted' if result.approval == 1 else 'Pending' }}</td>
                         </tr>
                         {% endfor %}
                     </tbody>
                 </table>
 
             {% elif search_type == 'service_request' %}
-                <table class="table mt-4">
+                <table class="table table-striped table-bordered mt-4">
                     <thead>
                         <tr>
                             <th>ID</th>
-                            <th>Service</th>
-                            <th>Customer</th>
-                            <th>Professional</th>
+                            <th>Customer Name</th>
+                            <th>Assigned Professional</th>
                             <th>Requested Date</th>
+                            <th>Date of Completion</th>
                             <th>Status</th>
+                            <th>Remarks</th>
+                            <th>Location</th>
+                            <th>Cost</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for result in results %}
                         <tr>
                             <td>{{ result.id }}</td>
-                            <td>{{ result.service.name }}</td>
                             <td>{{ result.customer.name }}</td>
                             <td>{{ result.professional.name if result.professional else 'N/A' }}</td>
                             <td>{{ result.date_of_request }}</td>
+                            <td>{{ result.date_of_completion if result.date_of_completion else 'Pending' }}</td>
                             <td>{{ result.service_status }}</td>
+                            <td>{{ result.remarks if result.remarks else 'None' }}</td>
+                            <td>{{ result.location if result.location else 'Not specified' }}</td>
+                            <td>{{ result.cost if result.cost else 'Not specified' }}</td>
                         </tr>
                         {% endfor %}
                     </tbody>
