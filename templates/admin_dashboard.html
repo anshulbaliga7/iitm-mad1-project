@@ -41,15 +41,25 @@
                     <th>ID</th>
                     <th>Service Name</th>
                     <th>Base Price</th>
+                    <th>Time Required</th>
+                    <th>Description</th>
+                    <th>Is Active</th>
+                    <th>Category</th>
                     <th>Action</th>
                 </tr>
             </thead>
             <tbody>
                 {% for service in services %}
                 <tr>
-                    <td>{{ service.id }}</td>
+                    <td>
+                        <a href="#" data-toggle="modal" data-target="#viewServiceModal{{ service.id }}">{{ service.id }}</a>
+                    </td>
                     <td>{{ service.name }}</td>
                     <td>{{ service.price }}</td>
+                    <td>{{ service.time_required }}</td>
+                    <td>{{ service.description }}</td>
+                    <td>{{ 'Yes' if service.is_active else 'No' }}</td>
+                    <td>{{ service.category }}</td>
                     <td>
                         <button class="btn btn-primary btn-sm" data-toggle="modal" data-target="#editServiceModal{{ service.id }}">Edit</button>
                         <form action="{{ url_for('delete_service', service_id=service.id) }}" method="POST" style="display:inline;">
@@ -57,6 +67,31 @@
                         </form>
                     </td>
                 </tr>
+
+                <!-- View Service Modal -->
+                <div class="modal fade" id="viewServiceModal{{ service.id }}" tabindex="-1" role="dialog" aria-labelledby="viewServiceModalLabel{{ service.id }}" aria-hidden="true">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="viewServiceModalLabel{{ service.id }}">Service Details</h5>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <div class="modal-body">
+                                <p><strong>Service Name:</strong> {{ service.name }}</p>
+                                <p><strong>Description:</strong> {{ service.description }}</p>
+                                <p><strong>Base Price:</strong> {{ service.price }}</p>
+                                <p><strong>Time Required:</strong> {{ service.time_required }}</p>
+                                <p><strong>Is Active:</strong> {{ 'Yes' if service.is_active else 'No' }}</p>
+                                <p><strong>Category:</strong> {{ service.category }}</p>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 {% endfor %}
             </tbody>
         </table>
@@ -89,6 +124,17 @@
                             <div class="form-group">
                                 <label for="time_required">Time Required</label>
                                 <input type="text" class="form-control" id="time_required" name="time_required" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="is_active">Is Active</label>
+                                <select class="form-control" id="is_active" name="is_active">
+                                    <option value="true">Yes</option>
+                                    <option value="false">No</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="category">Category</label>
+                                <input type="text" class="form-control" id="category" name="category">
                             </div>
                         </div>
                         <div class="modal-footer">
@@ -129,6 +175,17 @@
                                 <label for="time_required">Time Required</label>
                                 <input type="text" class="form-control" id="time_required" name="time_required" value="{{ service.time_required }}" required>
                             </div>
+                            <div class="form-group">
+                                <label for="is_active">Is Active</label>
+                                <select class="form-control" id="is_active" name="is_active">
+                                    <option value="true" {% if service.is_active %}selected{% endif %}>Yes</option>
+                                    <option value="false" {% if not service.is_active %}selected{% endif %}>No</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="category">Category</label>
+                                <input type="text" class="form-control" id="category" name="category" value="{{ service.category }}">
+                            </div>
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
@@ -146,6 +203,7 @@
                 <tr>
                     <th>ID</th>
                     <th>Name</th>
+                    <th>Email</th>
                     <th>Experience</th>
                     <th>Service Name</th>
                     <th>Action</th>
@@ -154,8 +212,11 @@
             <tbody>
                 {% for professional in professionals %}
                 <tr>
-                    <td>{{ professional.id }}</td>
+                    <td>
+                        <a href="#" data-toggle="modal" data-target="#viewProfessionalModal{{ professional.id }}">{{ professional.id }}</a>
+                    </td>
                     <td>{{ professional.name }}</td>
+                    <td>{{ professional.email }}</td>
                     <td>{{ professional.experience }}</td>
                     <td>{{ professional.service_name }}</td>
                     <td>
@@ -170,6 +231,33 @@
                         </form>
                     </td>
                 </tr>
+
+                <!-- View Professional Modal -->
+                <div class="modal fade" id="viewProfessionalModal{{ professional.id }}" tabindex="-1" role="dialog" aria-labelledby="viewProfessionalModalLabel{{ professional.id }}" aria-hidden="true">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="viewProfessionalModalLabel{{ professional.id }}">Professional Details</h5>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <div class="modal-body">
+                                <p><strong>ID:</strong> {{ professional.id }}</p>
+                                <p><strong>Name:</strong> {{ professional.name }}</p>
+                                <p><strong>Email:</strong> {{ professional.email }}</p>
+                                <p><strong>Experience:</strong> {{ professional.experience }}</p>
+                                <p><strong>Service Name:</strong> {{ professional.service_name }}</p>
+                                <p><strong>Phone Number:</strong> {{ professional.phone_number if professional.phone_number else 'N/A' }}</p>
+                                <p><strong>Address:</strong> {{ professional.address if professional.address else 'N/A' }}</p>
+                                <p><strong>Approval Status:</strong> {{ 'Approved' if professional.approval else 'Pending' }}</p>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 {% endfor %}
             </tbody>
         </table>
@@ -179,19 +267,63 @@
             <thead>
                 <tr>
                     <th>ID</th>
+                    <th>Customer Name</th>
                     <th>Assigned Professional</th>
                     <th>Requested Date</th>
+                    <th>Date of Completion</th>
                     <th>Status</th>
+                    <th>Action</th>
                 </tr>
             </thead>
             <tbody>
                 {% for request in service_requests %}
                 <tr>
-                    <td>{{ request.id }}</td>
-                    <td>{{ request.professional_id }}</td>
+                    <td>
+                        <a href="#" data-toggle="modal" data-target="#viewRequestModal{{ request.id }}">{{ request.id }}</a>
+                    </td>
+                    <td>{{ request.customer.name }}</td>  <!-- Display customer name -->
+                    <td>
+                        {% if request.professional %}
+                            {{ request.professional.name }}
+                        {% else %}
+                            N/A
+                        {% endif %}
+                    </td>
                     <td>{{ request.date_of_request }}</td>
+                    <td>{{ request.date_of_completion if request.date_of_completion else 'Pending' }}</td>  <!-- Display completion date or 'Pending' -->
                     <td>{{ request.service_status }}</td>
+                    <td>
+                        <button class="btn btn-info btn-sm" data-toggle="modal" data-target="#viewRequestModal{{ request.id }}">View</button>
+                    </td>
                 </tr>
+
+                <!-- View Service Request Modal -->
+                <div class="modal fade" id="viewRequestModal{{ request.id }}" tabindex="-1" role="dialog" aria-labelledby="viewRequestModalLabel{{ request.id }}" aria-hidden="true">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="viewRequestModalLabel{{ request.id }}">Service Request Details</h5>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <div class="modal-body">
+                                <p><strong>Request ID:</strong> {{ request.id }}</p>
+                                <p><strong>Customer Name:</strong> {{ request.customer.name }}</p>
+                                <p><strong>Assigned Professional:</strong> {% if request.professional %}{{ request.professional.name }}{% else %}N/A{% endif %}</p>
+                                <p><strong>Requested Date:</strong> {{ request.date_of_request }}</p>
+                                <p><strong>Date of Completion:</strong> {{ request.date_of_completion if request.date_of_completion else 'Pending' }}</p>
+                                <p><strong>Status:</strong> {{ request.service_status }}</p>
+                                <p><strong>Remarks:</strong> {{ request.remarks if request.remarks else 'None' }}</p>
+                                <p><strong>Location:</strong> {{ request.location if request.location else 'Not specified' }}</p>
+                                <p><strong>Cost:</strong> {{ request.cost if request.cost else 'Not specified' }}</p>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 {% endfor %}
             </tbody>
         </table>

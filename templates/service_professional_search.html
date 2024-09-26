@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Service Professional Search</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container mt-5">
+        <h2>Search Service Requests</h2>
+        <form action="{{ url_for('service_professional_search') }}" method="POST">
+            <div class="form-group">
+                <label for="search_by">Search By</label>
+                <select class="form-control" id="search_by" name="search_by" required>
+                    <option value="date">Date</option>
+                    <option value="location">Location</option>
+                    <option value="pincode">Pincode</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="search_text">Search Text</label>
+                <input type="text" class="form-control" id="search_text" name="search_text" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Search</button>
+        </form>
+
+        {% if results %}
+        <h2 class="mt-5">Search Results</h2>
+        <table class="table mt-4">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Customer Name</th>
+                    <th>Contact Phone</th>
+                    <th>Location</th>
+                    <th>Pincode</th>
+                    <th>Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for request in results %}
+                <tr>
+                    <td>{{ request.id }}</td>
+                    <td>{{ request.customer.name }}</td>
+                    <td>{{ request.customer.phone_number }}</td>
+                    <td>{{ request.location }}</td>
+                    <td>{{ request.customer.pincode }}</td>
+                    <td>{{ request.date_of_request }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% endif %}
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>

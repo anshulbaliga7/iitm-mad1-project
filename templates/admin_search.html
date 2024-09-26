@@ -13,7 +13,7 @@
                 <li class="nav-item"><a class="nav-link" href="{{ url_for('admin_dashboard') }}">Home</a></li>
                 <li class="nav-item"><a class="nav-link" href="{{ url_for('admin_search') }}">Search</a></li>
                 <li class="nav-item"><a class="nav-link" href="#">Summary</a></li>
-                <li class="nav-item"><a class="nav-link" href="#">Logout</a></li>
+                <li class="nav-item"><a class="nav-link" href="{{ url_for('home') }}">Logout</a></li>
             </ul>
         </div>
     </nav>
@@ -27,6 +27,7 @@
                     <option value="service">Service</option>
                     <option value="customer">Customer</option>
                     <option value="professional">Professional</option>
+                    <option value="service_request">Service Request</option> <!-- Added option for service requests -->
                 </select>
             </div>
             <div class="form-group">
@@ -37,31 +38,99 @@
         </form>
 
         {% if results %}
-        <h2>Search Results for "{{ search_text }}" in {{ search_type.capitalize() }}</h2>
-        <table class="table mt-4">
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Service</th>
-                    <th>Customer</th>
-                    <th>Professional</th>
-                    <th>Requested Date</th>
-                    <th>Status</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for result in results %}
-                <tr>
-                    <td>{{ result.id }}</td>
-                    <td>{{ result.service.name }}</td>
-                    <td>{{ result.customer.name }}</td>
-                    <td>{{ result.professional.name if result.professional else 'N/A' }}</td>
-                    <td>{{ result.date_of_request }}</td>
-                    <td>{{ result.service_status }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+            <h2>Search Results for "{{ search_text }}" in {{ search_type.capitalize() }}</h2>
+            {% if search_type == 'service' %}
+                <table class="table mt-4">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Service Name</th>
+                            <th>Price</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for result in results %}
+                        <tr>
+                            <td>{{ result.id }}</td>
+                            <td>{{ result.name }}</td>
+                            <td>{{ result.price }}</td>
+                            <td>{{ 'Active' if result.is_active else 'Inactive' }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+
+            {% elif search_type == 'customer' %}
+                <table class="table mt-4">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Customer Name</th>
+                            <th>Email</th>
+                            <th>Phone Number</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for result in results %}
+                        <tr>
+                            <td>{{ result.id }}</td>
+                            <td>{{ result.name }}</td>
+                            <td>{{ result.email }}</td>
+                            <td>{{ result.phone_number }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+
+            {% elif search_type == 'professional' %}
+                <table class="table mt-4">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Professional Name</th>
+                            <th>Email</th>
+                            <th>Experience</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for result in results %}
+                        <tr>
+                            <td>{{ result.id }}</td>
+                            <td>{{ result.name }}</td>
+                            <td>{{ result.email }}</td>
+                            <td>{{ result.experience }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+
+            {% elif search_type == 'service_request' %}
+                <table class="table mt-4">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Service</th>
+                            <th>Customer</th>
+                            <th>Professional</th>
+                            <th>Requested Date</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for result in results %}
+                        <tr>
+                            <td>{{ result.id }}</td>
+                            <td>{{ result.service.name }}</td>
+                            <td>{{ result.customer.name }}</td>
+                            <td>{{ result.professional.name if result.professional else 'N/A' }}</td>
+                            <td>{{ result.date_of_request }}</td>
+                            <td>{{ result.service_status }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% endif %}
         {% endif %}
     </div>
 

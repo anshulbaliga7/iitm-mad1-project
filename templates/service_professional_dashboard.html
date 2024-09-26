@@ -7,10 +7,79 @@
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
 </head>
 <body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <a class="navbar-brand" href="#">Service Professional Dashboard</a>
+        <div class="collapse navbar-collapse">
+            <ul class="navbar-nav mr-auto">
+                <li class="nav-item"><a class="nav-link" href="{{ url_for('service_professional_dashboard') }}">Home</a></li>
+                <li class="nav-item"><a class="nav-link" href="{{ url_for('service_professional_search') }}">Search</a></li>
+                <li class="nav-item"><a class="nav-link" href="#">Summary</a></li>
+                <li class="nav-item"><a class="nav-link" href="{{ url_for('home') }}">Logout</a></li>
+            </ul>
+        </div>
+    </nav>
+
     <div class="container">
-        <h2 class="mt-5">Service Professional Dashboard</h2>
-        <p>Welcome, {{ session['user_id'] }}!</p>
-        <!-- Add service professional functionalities here -->
+        <h2 class="mt-5">Today's Services</h2>
+        <table class="table mt-4">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Service Name</th>
+                    <th>Customer Name</th>
+                    <th>Requested Date</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for service in today_services %}
+                <tr>
+                    <td>{{ service.id }}</td>
+                    <td>{{ service.service.name }}</td>
+                    <td>{{ service.customer.name }}</td>
+                    <td>{{ service.date_of_request }}</td>
+                    <td>{{ service.service_status }}</td>
+                    <td>
+                        <form action="{{ url_for('accept_service', service_id=service.id) }}" method="POST" style="display:inline;">
+                            <button type="submit" class="btn btn-success btn-sm">Accept</button>
+                        </form>
+                        <form action="{{ url_for('reject_service', service_id=service.id) }}" method="POST" style="display:inline;">
+                            <button type="submit" class="btn btn-danger btn-sm">Reject</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <h2 class="mt-5">Closed Services</h2>
+        <table class="table mt-4">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Service Name</th>
+                    <th>Customer Name</th>
+                    <th>Requested Date</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for service in closed_services %}
+                <tr>
+                    <td>{{ service.id }}</td>
+                    <td>{{ service.service.name }}</td>
+                    <td>{{ service.customer.name }}</td>
+                    <td>{{ service.date_of_request }}</td>
+                    <td>{{ service.service_status }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
+
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </body>
 </html>
