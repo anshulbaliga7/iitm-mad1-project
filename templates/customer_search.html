@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Customer Dashboard</title>
+    <title>Customer Service Search</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"> <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     <style>
         .navbar {
             background-color: violet; /* Violet background */
@@ -18,34 +18,29 @@
         .navbar .nav-link:hover {
             color: #f8f9fa; /* Slightly lighter on hover */
         }
-        .service-card {
-            border-radius: 15px;
-            padding: 20px;
-            transition: transform 0.2s;
+        body {
+            background-color: #f8f9fa;
         }
-        .service-card:hover {
-            transform: scale(1.05);
+        .container {
+            margin-top: 20px;
         }
         .table th, .table td {
-            vertical-align: middle; /* Center align text in table cells */
+            vertical-align: middle;
         }
-        .star-rating {
-            display: flex;
-            cursor: pointer;
+        .modal-header {
+            background-color: #007bff;
+            color: white;
         }
         .star-rating input {
             display: none;
         }
         .star-rating label {
-            font-size: 24px;
-            color: lightgray;
+            font-size: 20px;
+            color: #ccc;
+            cursor: pointer;
         }
         .star-rating input:checked ~ label {
-            color: gold;
-        }
-        .star-rating label:hover,
-        .star-rating label:hover ~ label {
-            color: gold;
+            color: #f39c12;
         }
     </style>
 </head>
@@ -62,80 +57,97 @@
         </div>
     </nav>
 
-    <div class="container mt-5">
-        <h2>Welcome, {{ session['user_id'] }}!</h2>
+    <div class="container">
+        <h2 class="mb-4">Search for Services</h2>
+        <form id="searchForm" method="POST" action="{{ url_for('search_services') }}">
+            <div class="form-row">
+                <div class="form-group col-md-6">
+                    <label for="serviceName">Service Name</label>
+                    <select id="serviceName" name="service_name" class="form-control" required>
+                        <option value="">Select a service</option>
+                        {% for service in services %}
+                        <option value="{{ service.name }}">{{ service.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group col-md-6">
+                    <label for="searchText">Search Text</label>
+                    <input type="text" class="form-control" id="searchText" name="search_text" placeholder="Enter search text" aria-describedby="searchHelp">
+                    <small id="searchHelp" class="form-text text-muted">You can search by service description.</small>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary">Search</button>
+        </form>
 
-        <div class="rounded border p-4 mb-4">
-            <h4>Available Services</h4>
-            <div class="row">
-                {% set grouped_services = services | groupby('name') %}
-                {% for service_group in grouped_services %}
-                <div class="col-md-4 mb-3">
-                    <div class="card service-card text-center">
-                        <div class="card-body">
-                            <h5 class="card-title">{{ service_group[0] }}</h5>
-                            <button class="btn btn-info" type="button" data-toggle="collapse" data-target="#serviceDetails{{ service_group[0] }}" aria-expanded="false" aria-controls="serviceDetails{{ service_group[0] }}">
-                                View Details
-                            </button>
-                            <div class="collapse" id="serviceDetails{{ service_group[0] }}">
-                                <ul class="list-group mt-3">
-                                    {% for service in service_group[1] %}
-                                    <li class="list-group-item">
-                                        <strong>Description:</strong> {{ service.description }}<br>
-                                        <strong>Price:</strong> {{ service.price }}<br>
-                                        <strong>Time Required:</strong> {{ service.time_required }}<br>
-                                        <strong>Category:</strong> {{ service.category }}<br>
-                                        <button class="btn btn-primary mt-2" data-toggle="modal" data-target="#bookingModal{{ service.id }}">
-                                            <i class="fas fa-calendar-plus"></i> Book
-                                        </button>
-                                    </li>
+        {% if search_results %}
+        <h4 class="mt-4">Search Results for "{{ search_text }}"</h4>
+        <table class="table table-striped table-hover mt-3">
+            <thead>
+                <tr>
+                    <th>Service Name</th>
+                    <th>Description</th>
+                    <th>Price</th>
+                    <th>Time Required</th>
+                    <th>Category</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for service in search_results %}
+                <tr>
+                    <td>{{ service.name }}</td>
+                    <td>{{ service.description }}</td>
+                    <td>${{ service.price }}</td>
+                    <td>{{ service.time_required }} hours</td>
+                    <td>{{ service.category }}</td>
+                    <td>
+                        <button class="btn btn-primary" data-toggle="modal" data-target="#bookingModal{{ service.id }}">
+                            <i class="fas fa-calendar-plus"></i> Book
+                        </button>
+                    </td>
+                </tr>
 
-                                    <!-- Booking Modal -->
-                                    <div class="modal fade" id="bookingModal{{ service.id }}" tabindex="-1" role="dialog" aria-labelledby="bookingModalLabel{{ service.id }}" aria-hidden="true">
-                                        <div class="modal-dialog" role="document">
-                                            <div class="modal-content">
-                                                <form action="{{ url_for('book_service') }}" method="POST">
-                                                    <div class="modal-header">
-                                                        <h5 class="modal-title" id="bookingModalLabel{{ service.id }}">Book Service: {{ service.name }}</h5>
-                                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                                            <span aria-hidden="true">&times;</span>
-                                                        </button>
-                                                    </div>
-                                                    <div class="modal-body">
-                                                        <input type="hidden" name="service_id" value="{{ service.id }}">
-                                                        <p><strong>Description:</strong> {{ service.description }}</p>
-                                                        <p><strong>Price:</strong> {{ service.price }}</p>
-                                                        <p><strong>Time Required:</strong> {{ service.time_required }}</p>
-                                                        <p><strong>Category:</strong> {{ service.category }}</p>
-                                                        <div class="form-group">
-                                                            <label for="date_of_request">Date of Request</label>
-                                                            <input type="date" class="form-control" id="date_of_request" name="date_of_request" required>
-                                                        </div>
-                                                        <div class="form-group">
-                                                            <label for="remarks">Remarks (if any):</label>
-                                                            <textarea class="form-control" id="remarks" name="remarks" rows="3"></textarea>
-                                                        </div>
-                                                    </div>
-                                                    <div class="modal-footer">
-                                                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                                                        <button type="submit" class="btn btn-primary">Book</button>
-                                                    </div>
-                                                </form>
-                                            </div>
-                                        </div>
+                <!-- Booking Modal -->
+                <div class="modal fade" id="bookingModal{{ service.id }}" tabindex="-1" role="dialog" aria-labelledby="bookingModalLabel{{ service.id }}" aria-hidden="true">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                            <form action="{{ url_for('book_service') }}" method="POST">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="bookingModalLabel{{ service.id }}">Book Service: {{ service.name }}</h5>
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                </div>
+                                <div class="modal-body">
+                                    <input type="hidden" name="service_id" value="{{ service.id }}">
+                                    <p><strong>Description:</strong> {{ service.description }}</p>
+                                    <p><strong>Price:</strong> ${{ service.price }}</p>
+                                    <p><strong>Time Required:</strong> {{ service.time_required }} hours</p>
+                                    <p><strong>Category:</strong> {{ service.category }}</p>
+                                    <div class="form-group">
+                                        <label for="date_of_request">Date of Request</label>
+                                        <input type="date" class="form-control" id="date_of_request" name="date_of_request" required>
                                     </div>
-                                    {% endfor %}
-                                </ul>
-                            </div>
+                                    <div class="form-group">
+                                        <label for="remarks">Remarks (if any):</label>
+                                        <textarea class="form-control" id="remarks" name="remarks" rows="3"></textarea>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                    <button type="submit" class="btn btn-primary">Book</button>
+                                </div>
+                            </form>
                         </div>
                     </div>
                 </div>
                 {% endfor %}
-            </div>
-        </div>
+            </tbody>
+        </table>
+        {% endif %}
 
-        <h4>Service History</h4>
-        <table class="table table-striped mt-4">
+        <h4 class="mt-4">Service History</h4>
+        <table class="table table-striped table-hover mt-3">
             <thead>
                 <tr>
                     <th>ID</th>

@@ -211,6 +211,94 @@ def customer_dashboard():
 
     return render_template('customer_dashboard.html', services=services, service_history=service_history)
 
+@app.route('/book_service', methods=['POST'])
+def book_service():
+    service_id = request.form['service_id']
+    date_of_request_str = request.form['date_of_request']
+    remarks = request.form['remarks']
+    
+    # Convert the date string to a datetime object
+    date_of_request = datetime.strptime(date_of_request_str, '%Y-%m-%d').date()  # Adjust format if necessary
+
+    # Assuming you have a way to get the current customer's ID
+    customer_id = 2
+
+    # Create a new service request
+    new_request = ServiceRequest(
+        service_id=service_id,
+        customer_id=customer_id,
+        professional_id=None,  # Set to None as per your requirement
+        service_status='Requested',
+        date_of_request=date_of_request,
+        remarks=remarks
+    )
+
+    # Add to the session and commit to the database
+    db.session.add(new_request)
+    db.session.commit()
+
+    # Redirect back to the customer dashboard or show a success message
+    return redirect(url_for('customer_dashboard'))
+
+@app.route('/customer_search', methods=['GET', 'POST'])
+def customer_search():
+    # Logic to handle the search
+    user_id = 2  # Replace with actual user ID from session or context
+
+    # Fetch unique service names for the dropdown
+    unique_services = Service.query.distinct(Service.name).all()
+
+    # Fetch service history for the logged-in user
+    service_history = ServiceRequest.query \
+        .join(Service, ServiceRequest.service_id == Service.id) \
+        .join(User, ServiceRequest.customer_id == User.id) \
+        .filter(ServiceRequest.customer_id == user_id) \
+        .all()
+
+    return render_template('customer_search.html', services=unique_services, service_history=service_history)
+
+@app.route('/search_services', methods=['POST'])
+def search_services():
+    service_name = request.form.get('service_name')
+    search_text = request.form.get('search_text')
+    
+    # Initialize the query
+    user_id = 2  # Replace with actual user ID from session or context
+    query = Service.query
+
+    # If a service name is provided, filter by that service name
+    if service_name:
+        query = query.filter(Service.name == service_name)
+
+    # If search text is provided, filter by description
+    if search_text:
+        query = query.filter(Service.description.contains(search_text))
+
+    # Execute the query
+    search_results = query.all()
+
+    # Fetch service history
+    service_history = ServiceRequest.query \
+        .join(Service, ServiceRequest.service_id == Service.id) \
+        .join(User, ServiceRequest.customer_id == User.id) \
+        .filter(ServiceRequest.customer_id == user_id) \
+        .all()
+
+    # Get unique service names for the dropdown
+    unique_services = Service.query.distinct(Service.name).all()
+
+    return render_template('customer_search.html', services=unique_services, search_results=search_results, search_text=search_text, service_history=service_history)
+
+@app.route('/close_service_request/<int:request_id>', methods=['POST'])
+def close_service_request(request_id):
+    # Fetch the service request from the database
+    request_to_close = ServiceRequest.query.get(request_id)
+    if request_to_close:
+        request_to_close.service_status = 'Closed'  # Update the status
+        db.session.commit()  # Commit the changes
+
+    return redirect(url_for('customer_dashboard'))  # Redirect back to the dashboard
+
 @app.route('/admin_login', methods=['GET', 'POST'])
 def admin_login():
     if request.method == 'POST':
