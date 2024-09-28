@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Summary</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .navbar {
+            background-color: violet; /* Violet background */
+        }
+        .navbar .nav-link {
+            color: white; /* White text */
+            margin-left: 165px; /* Spacing between nav links */
+            font-weight: bold; /* Bold text */
+        }
+        .navbar .nav-link:hover {
+            color: #f8f9fa; /* Slightly lighter on hover */
+        }
+        body {
+            background-color: #f8f9fa;
+        }
+        .container {
+            margin-top: 20px;
+        }
+        .chart-container {
+            position: relative;
+            margin: auto;
+            height: 40vh;
+            width: 100%;
+        }
+        .card {
+            margin-bottom: 20px;
+        }
+        .navbar {
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <a class="navbar-brand" href="#">Admin Dashboard</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav mr-auto">
+                <li class="nav-item"><a class="nav-link" href="{{ url_for('admin_dashboard') }}">Home</a></li>
+                <li class="nav-item"><a class="nav-link" href="{{ url_for('admin_search') }}">Search</a></li>
+                <li class="nav-item"><a class="nav-link" href="{{ url_for('admin_summary') }}">Summary</a></li>
+                <li class="nav-item"><a class="nav-link" href="{{ url_for('home') }}">Logout</a></li>
+            </ul>
+        </div>
+    </nav>
+    <div class="text-center">
+        <h1>Admin Summary</h1>
+    </div>
+
+        <div class="row">
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h4>Service Status Summary</h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <canvas id="serviceStatusChart"></canvas>
+                        </div>
+                        <p class="mt-2">This chart shows the current status of service requests.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h4>Service Requests Summary</h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <canvas id="serviceRequestsChart"></canvas>
+                        </div>
+                        <p class="mt-2">This chart displays the number of requests for each service.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h4>User Registration Trends</h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <canvas id="userRegistrationChart"></canvas>
+                        </div>
+                        <p class="mt-2">This chart illustrates the trends in user registrations over time.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Service Status Chart
+        const serviceStatusCtx = document.getElementById('serviceStatusChart').getContext('2d');
+        const completionCounts = JSON.parse('{{ completion_counts|tojson }}');
+        const serviceStatusChart = new Chart(serviceStatusCtx, {
+            type: 'pie',
+            data: {
+                labels: ['Requested', 'Assigned', 'Closed'],
+                datasets: [{
+                    label: 'Service Status',
+                    data: [completionCounts['Requested'], completionCounts['Assigned'], completionCounts['Closed']],
+                    backgroundColor: [
+                        'rgba(54, 162, 235, 0.6)',
+                        'rgba(255, 206, 86, 0.6)',
+                        'rgba(255, 99, 132, 0.6)'
+                    ],
+                    borderColor: [
+                        'rgba(54, 162, 235, 1)',
+                        'rgba(255, 206, 86, 1)',
+                        'rgba(255, 99, 132, 1)'
+                    ],
+                    borderWidth: 1
+                }]
+            }
+        });
+
+        // Service Requests Summary Chart
+        const serviceRequestsCtx = document.getElementById('serviceRequestsChart').getContext('2d');
+        const serviceCounts = JSON.parse('{{ service_counts|tojson }}');
+        const serviceRequestLabels = Object.keys(serviceCounts);
+        const serviceRequestData = Object.values(serviceCounts);
+        const serviceRequestsChart = new Chart(serviceRequestsCtx, {
+            type: 'bar',
+            data: {
+                labels: serviceRequestLabels,
+                datasets: [{
+                    label: 'Number of Requests',
+                    data: serviceRequestData,
+                    backgroundColor: 'rgba(75, 192, 192, 0.6)',
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+
+        // User Registration Trends Chart
+        const userRegistrationCtx = document.getElementById('userRegistrationChart').getContext('2d');
+        const userRegistrationCounts = JSON.parse('{{ user_registration_counts|tojson }}');
+        const userRegistrationLabels = Object.keys(userRegistrationCounts);
+        const userRegistrationData = Object.values(userRegistrationCounts);
+        const userRegistrationChart = new Chart(userRegistrationCtx, {
+            type: 'line',
+            data: {
+                labels: userRegistrationLabels,
+                datasets: [{
+                    label: 'New Registrations',
+                    data: userRegistrationData,
+                    fill: false,
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    tension: 0.1
+                }]
+            }
+        });
+    </script>
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>

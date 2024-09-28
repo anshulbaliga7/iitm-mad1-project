@@ -143,8 +143,7 @@ def service_professional_dashboard():
 
     # Fetch closed services (is_active = 0)
     closed_services = ServiceRequest.query.join(Service).filter(
-        Service.is_active == False,
-        #ServiceRequest.service_status == 'Closed'
+        ServiceRequest.service_status == 'Closed'
     ).all()
 
     return render_template('service_professional_dashboard.html', today_services=today_services, closed_services=closed_services, professional=professional)
@@ -171,6 +170,27 @@ def update_profile():
 
     # Redirect back to the dashboard or show a success message
     return redirect(url_for('service_professional_dashboard'))
+
+@app.route('/update_profile_customer', methods=['POST'])
+def update_profile_customer():
+    # Assuming you have a way to get the current professional's ID
+    current_customer_id = 2
+
+    # Fetch the professional's details
+    customer = User.query.get(current_customer_id)
+
+    # Update the professional's details
+    customer.name = request.form['name']
+    customer.email = request.form['email']
+    customer.phone_number = request.form['phone_number']
+    customer.address = request.form['address']
+    customer.pincode = request.form['pincode']
+
+    # Commit the changes to the database
+    db.session.commit()
+
+    # Redirect back to the dashboard or show a success message
+    return redirect(url_for('customer_dashboard'))
 
 @app.route('/accept_service/<int:service_id>', methods=['POST'])
 def accept_service(service_id):
@@ -199,6 +219,7 @@ def reject_service(service_id):
 def customer_dashboard():
     user_id = 2
 
+    customer = User.query.filter_by(id=user_id, role='customer').first()
     # Fetch all available services
     services = Service.query.filter_by(is_active=True).all()  # Assuming you want only active services
 
@@ -209,7 +230,7 @@ def customer_dashboard():
         .filter(ServiceRequest.customer_id == user_id) \
         .all()
 
-    return render_template('customer_dashboard.html', services=services, service_history=service_history)
+    return render_template('customer_dashboard.html', customer=customer, services=services, service_history=service_history)
 
 @app.route('/book_service', methods=['POST'])
 def book_service():
@@ -500,3 +521,79 @@ def service_professional_search():
             ).all()
 
     return render_template('service_professional_search.html', results=results)
+
+@app.route('/admin_summary')
+def admin_summary():
+    # Fetch service requests data
+    service_requests = ServiceRequest.query.all()
+
+    # Prepare data for charts
+    service_counts = {}
+    completion_counts = {'Requested': 0, 'Assigned': 0, 'Closed': 0}
+    user_registration_counts = {}
+    
+    for request in service_requests:
+        # Count service statuses
+        if request.service_status in completion_counts:
+            completion_counts[request.service_status] += 1
+
+    # Fetch services data
+    services = Service.query.all()
+    for service in services:
+        service_name = service.name
+        service_counts[service_name] = service_counts.get(service_name, 0) + 1
+
+    return render_template('admin_summary.html', 
+                           service_counts=service_counts, 
+                           completion_counts=completion_counts, 
+                           user_registration_counts=user_registration_counts)
+
+@app.route('/service_professional_summary')
+def service_professional_summary():
+    # Fetch service requests data
+    service_requests = ServiceRequest.query.all()
+
+    # Prepare data for charts
+    service_counts = {}
+    completion_counts = {'Requested': 0, 'Assigned': 0, 'Closed': 0}
+    user_registration_counts = {}
+    
+    for request in service_requests:
+        # Count service statuses
+        if request.service_status in completion_counts:
+            completion_counts[request.service_status] += 1
+
+    # Fetch services data
+    services = Service.query.all()
+    for service in services:
+        service_name = service.name
+        service_counts[service_name] = service_counts.get(service_name, 0) + 1
+
+    return render_template('service_professional_summary.html', 
+                           service_counts=service_counts, 
+                           completion_counts=completion_counts)
+
+@app.route('/customer_summary')
+def customer_summary():
+    # Fetch service requests data
+    service_requests = ServiceRequest.query.all()
+
+    # Prepare data for charts
+    service_counts = {}
+    completion_counts = {'Requested': 0, 'Assigned': 0, 'Closed': 0}
+    user_registration_counts = {}
+    
+    for request in service_requests:
+        # Count service statuses
+        if request.service_status in completion_counts:
+            completion_counts[request.service_status] += 1
+
+    # Fetch services data
+    services = Service.query.all()
+    for service in services:
+        service_name = service.name
+        service_counts[service_name] = service_counts.get(service_name, 0) + 1
+
+    return render_template('customer_summary.html', 
+                           service_counts=service_counts, 
+                           completion_counts=completion_counts)
