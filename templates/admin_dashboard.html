@@ -5,43 +5,42 @@
     <title>Admin Dashboard</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
     <style>
-        /* Custom styles for the navbar */
         .navbar {
-            background-color: violet; /* Violet background */
+            background-color: violet;
         }
         .navbar .nav-link {
-            color: white; /* White text */
-            margin-left: 165px; /* Spacing between nav links */
-            font-weight: bold; /* Bold text */
+            color: white;
+            margin-left: 165px;
+            font-weight: bold;
         }
         .navbar .nav-link:hover {
-            color: #f8f9fa; /* Slightly lighter on hover */
+            color: #f8f9fa;
         }
         .table {
-            margin-top: 20px; /* Space between tables */
-            border: 1px solid #dee2e6; /* Border for the table */
-            border-radius: 0.25rem; /* Rounded corners */
-            overflow: hidden; /* Prevent overflow */
+            margin-top: 20px;
+            border: 1px solid #dee2e6;
+            border-radius: 0.25rem;
+            overflow: hidden;
         }
         .table th, .table td {
-            vertical-align: middle; /* Center align text vertically */
+            vertical-align: middle;
         }
         .table th {
-            background-color: #f8f9fa; /* Light background for header */
-            font-weight: bold; /* Bold header text */
+            background-color: #f8f9fa;
+            font-weight: bold;
         }
         .table tbody tr:hover {
-            background-color: #f1f1f1; /* Highlight row on hover */
+            background-color: #f1f1f1;
         }
         .container {
-            margin-top: 20px; /* Space above the container */
+            margin-top: 20px;
         }
         .modal-header {
-            background-color: #007bff; /* Blue background for modal header */
-            color: white; /* White text for modal header */
+            background-color: #007bff;
+            color: white;
         }
         .modal-footer {
-            justify-content: space-between; /* Space between buttons in modal footer */
+            justify-content: space-between;
         }
     </style>
 </head>
@@ -225,7 +224,7 @@
         </div>
         {% endfor %}
 
-        <h2 class="mt-4">Professionals</h2> <!-- Added margin-top for spacing -->
+        <h2 class="mt-4">Professionals</h2>
         <table class="table">
             <thead>
                 <tr>
@@ -292,7 +291,7 @@
             </tbody>
         </table>
 
-        <h2 class="mt-4">Service Requests</h2> <!-- Added margin-top for spacing -->
+        <h2 class="mt-4">Service Requests</h2> 
         <table class="table">
             <thead>
                 <tr>
@@ -311,7 +310,7 @@
                     <td>
                         <a href="#" data-toggle="modal" data-target="#viewRequestModal{{ request.id }}">{{ request.id }}</a>
                     </td>
-                    <td>{{ request.customer.name }}</td>  <!-- Display customer name -->
+                    <td>{{ request.customer.name }}</td> 
                     <td>
                         {% if request.professional %}
                             {{ request.professional.name }}
@@ -320,7 +319,7 @@
                         {% endif %}
                     </td>
                     <td>{{ request.date_of_request }}</td>
-                    <td>{{ request.date_of_completion if request.date_of_completion else 'Pending' }}</td>  <!-- Display completion date or 'Pending' -->
+                    <td>{{ request.date_of_completion if request.date_of_completion else 'Pending' }}</td>  
                     <td>{{ request.service_status }}</td>
                     <td>
                         <button class="btn btn-info btn-sm" data-toggle="modal" data-target="#viewRequestModal{{ request.id }}">View</button>

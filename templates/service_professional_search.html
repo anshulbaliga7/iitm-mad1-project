@@ -6,39 +6,38 @@
     <title>Service Professional Search</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <style>
-        /* Custom styles for the navbar */
         .navbar {
-            background-color: violet; /* Violet background */
+            background-color: violet;
         }
         .navbar .nav-link {
-            color: white; /* White text */
-            margin-left: 150px; /* Spacing between nav links */
-            font-weight: bold; /* Bold text */
+            color: white;
+            margin-left: 150px;
+            font-weight: bold;
         }
         .navbar .nav-link:hover {
-            color: #f8f9fa; /* Slightly lighter on hover */
+            color: #f8f9fa;
         }
         .container {
-            margin-top: 20px; /* Space above the container */
+            margin-top: 20px;
         }
         .table {
-            margin-top: 20px; /* Space between tables */
-            border: 1px solid #dee2e6; /* Border for the table */
-            border-radius: 0.25rem; /* Rounded corners */
-            overflow: hidden; /* Prevent overflow */
+            margin-top: 20px;
+            border: 1px solid #dee2e6;
+            border-radius: 0.25rem;
+            overflow: hidden;
         }
         .table th, .table td {
-            vertical-align: middle; /* Center align text vertically */
+            vertical-align: middle;
         }
         .table th {
-            background-color: #f8f9fa; /* Light background for header */
-            font-weight: bold; /* Bold header text */
+            background-color: #f8f9fa;
+            font-weight: bold;
         }
         .table tbody tr:hover {
-            background-color: #f1f1f1; /* Highlight row on hover */
+            background-color: #f1f1f1;
         }
         .form-group {
-            margin-bottom: 1.5rem; /* Increased spacing for form groups */
+            margin-bottom: 1.5rem;
         }
     </style>
 </head>
@@ -80,7 +79,7 @@
                 <tr>
                     <th>ID</th>
                     <th>Customer Name</th>
-                    <th>Professional Name</th> <!-- New column for Professional Name -->
+                    <th>Professional Name</th> 
                     <th>Contact Phone</th>
                     <th>Service Name</th>
                     <th>Location</th>
@@ -94,7 +93,7 @@
                 <tr>
                     <td>{{ request.id }}</td>
                     <td>{{ request.customer.name }}</td>
-                    <td>{{ request.professional.name if request.professional else 'N/A' }}</td> <!-- Display Professional Name -->
+                    <td>{{ request.professional.name if request.professional else 'N/A' }}</td> 
                     <td>{{ request.customer.phone_number }}</td>
                     <td>{{ request.customer.service_name }}</td>
                     <td>{{ request.location }}</td>

@@ -5,18 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Customer Dashboard</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"> <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     <style>
         .navbar {
-            background-color: violet; /* Violet background */
+            background-color: violet;
         }
         .navbar .nav-link {
-            color: white; /* White text */
-            margin-left: 165px; /* Spacing between nav links */
-            font-weight: bold; /* Bold text */
+            color: white;
+            margin-left: 165px;
+            font-weight: bold;
         }
         .navbar .nav-link:hover {
-            color: #f8f9fa; /* Slightly lighter on hover */
+            color: #f8f9fa;
         }
         .service-card {
             border-radius: 15px;
@@ -27,7 +27,7 @@
             transform: scale(1.05);
         }
         .table th, .table td {
-            vertical-align: middle; /* Center align text in table cells */
+            vertical-align: middle; 
         }
         .star-rating {
             display: flex;
@@ -63,7 +63,7 @@
     </nav>
     <div class="container">
         <h1 class="text-center mt-5">Customer Dashboard</h1>
-        <div class="text-right mb-3"> <!-- Aligns the button to the right -->
+        <div class="text-right mb-3"> 
             <button class="btn btn-info" data-toggle="modal" data-target="#viewProfileModal">Edit Profile</button>
         </div>
     </div>
@@ -224,7 +224,7 @@
     <div class="modal fade" id="viewProfileModal" tabindex="-1" role="dialog" aria-labelledby="viewProfileModalLabel" aria-hidden="true">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
-                <form action="{{ url_for('update_profile_customer') }}" method="POST"> <!-- Form for updating profile -->
+                <form action="{{ url_for('update_profile_customer') }}" method="POST"> 
                     <div class="modal-header">
                         <h5 class="modal-title" id="viewProfileModalLabel">Edit Profile</h5>
                         <button type="button" class="close" data-dismiss="modal" aria-label="Close">

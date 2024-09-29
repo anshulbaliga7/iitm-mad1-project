@@ -20,7 +20,7 @@ class User(db.Model):
     documents = db.Column(db.String(200), nullable=True)  # Only for service professionals
     blocked = db.Column(db.Boolean, default=False)
     approval = db.Column(db.Boolean, nullable=True)  # Only for service professionals
-    profile_photo = db.Column(db.String(200), nullable=True)  # Optional, for better user profiles
+    profile_photo = db.Column(db.String(200), nullable=True)  
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -35,8 +35,8 @@ class Service(db.Model):
     price = db.Column(db.Float, nullable=False)
     time_required = db.Column(db.String(50), nullable=False)
     description = db.Column(db.String(200), nullable=True)
-    is_active = db.Column(db.Boolean, default=True)  # Indicates if service is still active
-    category = db.Column(db.String(80), nullable=True)  # Optional, for categorization
+    is_active = db.Column(db.Boolean, default=True) 
+    category = db.Column(db.String(80), nullable=True)  
 
 
 class ServiceRequest(db.Model):
@@ -48,8 +48,8 @@ class ServiceRequest(db.Model):
     date_of_completion = db.Column(db.DateTime, nullable=True)
     service_status = db.Column(db.String(20), nullable=False)  # Requested, Assigned, Closed
     remarks = db.Column(db.String(200), nullable=True)
-    location = db.Column(db.String(200), nullable=True)  # Optional, for customer location
-    cost = db.Column(db.Float, nullable=True)  # Final cost if modified
+    location = db.Column(db.String(200), nullable=True) 
+    cost = db.Column(db.Float, nullable=True) 
 
     service = db.relationship('Service', backref=db.backref('requests', lazy=True))
     customer = db.relationship('User', foreign_keys=[customer_id], backref=db.backref('customer_requests', lazy=True))
