@@ -82,44 +82,46 @@ def customer_signup():
 
 @app.route('/service_professional_signup', methods=['GET', 'POST'])
 def service_professional_signup():
+    services = Service.query.all()  # Fetch all services
+
     if request.method == 'POST':
         name = request.form['name']
         username = request.form['username']
         email = request.form['email']
         password = request.form['password']
-        phone_number = request.form['phone_number']  # New field
+        phone_number = request.form['phone_number']
         address = request.form['address']
         pincode = request.form['pincode']
-        experience = request.form['experience']  # New field
-        service_name = request.form['service_name']  # New field
+        experience = request.form['experience']
+        service_name = request.form['service_name']
 
         # Create a new user instance
         new_user = User(
-        name=name,
-        username=username,
-        email=email,
-        phone_number=phone_number,  # Include phone number
-        address=address,
-        pincode=pincode,
-        experience=experience,  # Include experience
-        service_name=service_name,  # Include service name
-        role='service_professional',  # Set role as service professional
-        blocked=False,  # Default value
-        approval=None,  # Default value
-        profile_photo=None  # Default value
+            name=name,
+            username=username,
+            email=email,
+            phone_number=phone_number,
+            address=address,
+            pincode=pincode,
+            experience=experience,
+            service_name=service_name,
+            role='service_professional',
+            blocked=False,
+            approval=None,
+            profile_photo=None
         )
 
-    # Set the password
+        # Set the password
         new_user.set_password(password)
 
-    # Add the user to the session and commit
+        # Add the user to the session and commit
         db.session.add(new_user)
         db.session.commit()
 
         flash('Signup successful! Please log in.', 'success')
-        return redirect(url_for('home'))  # Redirect to login or another page
+        return redirect(url_for('home'))
 
-    return render_template('service_professional_signup.html')
+    return render_template('service_professional_signup.html', services=services)  # Pass services to the template
 
 @app.route('/admin_dashboard')
 def admin_dashboard():
@@ -196,7 +198,7 @@ def update_profile_customer():
 def accept_service(service_id):
     service_request = ServiceRequest.query.get(service_id)
     if service_request:
-        service_request.professional_id = session['user_id']  # Assign the professional
+        service_request.professional_id = 3  # Assign the professional
         service_request.service_status = 'Assigned'  # Update status
         db.session.commit()
         flash('Service request accepted successfully!', 'success')

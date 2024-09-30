@@ -125,7 +125,12 @@
                 </div>
                 <div class="form-group">
                     <label for="service_name">Service Name</label>
-                    <input type="text" class="form-control" id="service_name" name="service_name" required>
+                    <select class="form-control" id="service_name" name="service_name" required>
+                        <option value="" disabled selected>Select a service</option>
+                        {% for service in services %}
+                            <option value="{{ service.name }}">{{ service.name }}</option>
+                        {% endfor %}
+                    </select>
                 </div>
                 <button type="submit" class="btn btn-primary">Sign Up</button>
             </form>
