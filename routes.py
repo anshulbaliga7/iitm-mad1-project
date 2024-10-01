@@ -133,22 +133,29 @@ def admin_dashboard():
 @app.route('/service_professional_dashboard')
 def service_professional_dashboard():
     today = datetime.today().date()
-    current_professional_id = 3
+    current_professional_id = 3  # This should ideally come from the session or context
 
     # Fetch the professional's details
     professional = User.query.filter_by(id=current_professional_id, role='service_professional').first()
-    # Fetch today's active services (is_active = 1)
-    today_services = ServiceRequest.query.join(Service).filter(
-        Service.is_active == True,
-        #ServiceRequest.date_of_request >= today
-    ).all()
 
-    # Fetch closed services (is_active = 0)
-    closed_services = ServiceRequest.query.join(Service).filter(
-        ServiceRequest.service_status == 'Closed'
-    ).all()
+    # Check if the professional is approved and not blocked
+    if professional and professional.approval == 1 and professional.blocked == 0:
+        # Fetch today's active services (is_active = 1) that match the professional's service_name
+        today_services = ServiceRequest.query.join(Service).filter(
+            Service.is_active == True,
+            Service.name == professional.service_name  # Filter by the professional's service_name
+        ).all()
 
-    return render_template('service_professional_dashboard.html', today_services=today_services, closed_services=closed_services, professional=professional)
+        # Fetch closed services (is_active = 0) that match the professional's service_name
+        closed_services = ServiceRequest.query.join(Service).filter(
+            ServiceRequest.service_status == 'Closed',
+            Service.name == professional.service_name  # Filter by the professional's service_name
+        ).all()
+
+        return render_template('service_professional_dashboard.html', today_services=today_services, closed_services=closed_services, professional=professional)
+    else:
+        flash('Access denied: Your account is either blocked or not approved.', 'error')
+        return redirect(url_for('home'))  # Redirect to home or another appropriate page
 
 @app.route('/update_profile', methods=['POST'])
 def update_profile():
@@ -318,7 +325,11 @@ def close_service_request(request_id):
     request_to_close = ServiceRequest.query.get(request_id)
     if request_to_close:
         request_to_close.service_status = 'Closed'  # Update the status
+        request_to_close.remarks = request.form.get('remarks', '')  # Capture remarks
         db.session.commit()  # Commit the changes
+        flash('Service request closed successfully!', 'success')
+    else:
+        flash('Service request not found!', 'error')
 
     return redirect(url_for('customer_dashboard'))  # Redirect back to the dashboard
 
