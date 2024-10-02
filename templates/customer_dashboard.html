@@ -144,6 +144,7 @@
                     <th>Service Name</th>
                     <th>Professional Name</th>
                     <th>Phone Number</th>
+                    <th>Requested Date</th>
                     <th>Status</th>
                     <th>Action</th>
                 </tr>
@@ -151,10 +152,13 @@
             <tbody>
                 {% for request in service_history %}
                 <tr id="requestRow{{ request.id }}">
-                    <td>{{ request.id }}</td>
+                    <td>
+                        <a href="#" data-toggle="modal" data-target="#viewModal{{ request.id }}">{{ request.id }}</a>
+                    </td>
                     <td>{{ request.service.name }}</td>
                     <td>{{ request.professional.name if request.professional else 'N/A' }}</td>
                     <td>{{ request.professional.phone_number if request.professional else 'N/A' }}</td>
+                    <td>{{ request.date_of_request }}</td>
                     <td>{{ request.service_status }}</td>
                     <td>
                         {% if request.service_status == 'Requested' %}
@@ -169,6 +173,30 @@
                         {% endif %}
                     </td>
                 </tr>
+                <!-- View Requested Service Modal -->
+                <div class="modal fade" id="viewModal{{ request.id }}" tabindex="-1" role="dialog" aria-labelledby="viewModalLabel{{ request.id }}" aria-hidden="true">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="viewModalLabel{{ request.id }}">Requested Service Details</h5>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <div class="modal-body">
+                                <p><strong>Service Name:</strong> {{ request.service.name }}</p>
+                                <p><strong>Description:</strong> {{ request.service.description }}</p>
+                                <p><strong>Base Price:</strong> {{ request.service.price }}</p>
+                                <p><strong>Time Required:</strong> {{ request.service.time_required }}</p>
+                                <p><strong>Requested Date:</strong> {{ request.date_of_request }}</p>
+                                <p><strong>Completed Date:</strong> {{ request.date_of_completion if request.date_of_completion else 'N/A' }}</p>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
                 <!-- Confirmation Modal -->
                 <div class="modal fade" id="confirmCloseModal{{ request.id }}" tabindex="-1" role="dialog" aria-labelledby="confirmCloseModalLabel{{ request.id }}" aria-hidden="true">

@@ -145,10 +145,12 @@ def service_professional_dashboard():
     professional = User.query.filter_by(id=current_professional_id, role='service_professional').first()
 
     # Check if the professional is approved and not blocked
+    #add this once done:  and professional.approval == 1 and professional.blocked == 0
     if professional and professional.approval == 1 and professional.blocked == 0:
         # Fetch today's active services (is_active = 1) that match the professional's service_name
         today_services = ServiceRequest.query.join(Service).filter(
             Service.is_active == True,
+            ServiceRequest.service_status != 'Closed',
             Service.name == professional.service_name  # Filter by the professional's service_name
         ).all()
 
@@ -367,6 +369,19 @@ def close_service_request(request_id):
         flash('Service request not found!', 'error')
 
     return redirect(url_for('customer_dashboard'))  # Redirect back to the dashboard
+
+@app.route('/close_service1/<int:service_id>', methods=['POST'])
+def close_service1(service_id):
+    service_request = ServiceRequest.query.get(service_id)
+    if service_request and service_request.service_status == 'Assigned':
+        service_request.service_status = 'Closed'  # Update status to Closed
+        service_request.date_of_completion = datetime.now()  # Record the completion date
+        db.session.commit()  # Commit the changes
+        flash('Service request closed successfully!', 'success')
+    else:
+        flash('Service request not found or cannot be closed.', 'danger')
+
+    return redirect(url_for('service_professional_dashboard'))  # Redirect back to the dashboard
 
 @app.route('/admin_login', methods=['GET', 'POST'])
 def admin_login():
