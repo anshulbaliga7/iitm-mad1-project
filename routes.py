@@ -37,10 +37,16 @@ def login():
             elif user.role == 'customer':
                 return redirect(url_for('customer_dashboard'))
         else:
-            flash('Invalid credentials. Please try again.')
             return redirect(url_for('login'))
     
     return render_template('login.html')
+
+@app.route('/logout')
+def logout():
+    # Clear the session
+    session.pop('user_id', None)  # Remove user_id from session
+    flash('You have been logged out.', 'success')  # Optional: flash a message
+    return redirect(url_for('home'))  # Redirect to the login page
 
 @app.route('/customer_signup', methods=['GET', 'POST'])
 def customer_signup():
@@ -133,7 +139,7 @@ def admin_dashboard():
 @app.route('/service_professional_dashboard')
 def service_professional_dashboard():
     today = datetime.today().date()
-    current_professional_id = 3  # This should ideally come from the session or context
+    current_professional_id = session.get('user_id')
 
     # Fetch the professional's details
     professional = User.query.filter_by(id=current_professional_id, role='service_professional').first()
@@ -160,7 +166,7 @@ def service_professional_dashboard():
 @app.route('/update_profile', methods=['POST'])
 def update_profile():
     # Assuming you have a way to get the current professional's ID
-    current_professional_id = 3
+    current_professional_id = session.get('user_id')
 
     # Fetch the professional's details
     professional = User.query.get(current_professional_id)
@@ -183,7 +189,7 @@ def update_profile():
 @app.route('/update_profile_customer', methods=['POST'])
 def update_profile_customer():
     # Assuming you have a way to get the current professional's ID
-    current_customer_id = 2
+    current_customer_id = session.get('user_id')
 
     # Fetch the professional's details
     customer = User.query.get(current_customer_id)
@@ -205,7 +211,7 @@ def update_profile_customer():
 def accept_service(service_id):
     service_request = ServiceRequest.query.get(service_id)
     if service_request:
-        service_request.professional_id = 3  # Assign the professional
+        service_request.professional_id = session.get('user_id')
         service_request.service_status = 'Assigned'  # Update status
         db.session.commit()
         flash('Service request accepted successfully!', 'success')
@@ -226,7 +232,7 @@ def reject_service(service_id):
 
 @app.route('/customer_dashboard')
 def customer_dashboard():
-    user_id = 2
+    user_id = session.get('user_id')
 
     customer = User.query.filter_by(id=user_id, role='customer').first()
     # Fetch all available services
@@ -251,7 +257,36 @@ def book_service():
     date_of_request = datetime.strptime(date_of_request_str, '%Y-%m-%d').date()  # Adjust format if necessary
 
     # Assuming you have a way to get the current customer's ID
-    customer_id = 2
+    customer_id = session.get('user_id')
+
+    # Create a new service request
+    new_request = ServiceRequest(
+        service_id=service_id,
+        customer_id=customer_id,
+        professional_id=None,  # Set to None as per your requirement
+        service_status='Requested',
+        date_of_request=date_of_request,
+        remarks=remarks
+    )
+
+    # Add to the session and commit to the database
+    db.session.add(new_request)
+    db.session.commit()
+
+    # Redirect back to the customer dashboard or show a success message
+    return redirect(url_for('customer_dashboard'))
+
+@app.route('/book_service1', methods=['POST'])
+def book_service1():
+    service_id = request.form['service_id']
+    date_of_request_str = request.form['date_of_request']
+    remarks = request.form['remarks']
+    
+    # Convert the date string to a datetime object
+    date_of_request = datetime.strptime(date_of_request_str, '%Y-%m-%d').date()  # Adjust format if necessary
+
+    # Assuming you have a way to get the current customer's ID
+    customer_id = session.get('user_id')
 
     # Create a new service request
     new_request = ServiceRequest(
@@ -273,7 +308,7 @@ def book_service():
 @app.route('/customer_search', methods=['GET', 'POST'])
 def customer_search():
     # Logic to handle the search
-    user_id = 2  # Replace with actual user ID from session or context
+    user_id = session.get('user_id')
 
     # Fetch unique service names for the dropdown
     unique_services = Service.query.distinct(Service.name).all()
