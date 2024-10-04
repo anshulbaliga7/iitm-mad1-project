@@ -5,6 +5,7 @@ from app import app
 from models import db, User, Service, ServiceRequest
 from werkzeug.security import generate_password_hash
 from datetime import datetime
+from sqlalchemy import func
 
 UPLOAD_FOLDER = 'uploads'
 ALLOWED_EXTENSIONS = {'pdf'}
@@ -544,10 +545,10 @@ def admin_search():
                 results = Service.query.filter(Service.name.contains(search_text)).all()  # Fetch services by name
 
         elif search_type == 'customer':
-            results = User.query.filter(User.name.contains(search_text)).all()
+            results = User.query.filter(User.name.contains(search_text), User.role == 'customer').all()
 
         elif search_type == 'professional':
-            results = User.query.filter(User.name.contains(search_text)).all()
+            results = User.query.filter(User.name.contains(search_text), User.role == 'service_professional').all()
 
         elif search_type == 'service_request':
             if search_text.lower() == 'assigned':
@@ -572,7 +573,7 @@ def service_professional_search():
         if search_by == 'date':
             # Assuming search_text is in 'YYYY-MM-DD' format
             results = ServiceRequest.query.join(User, ServiceRequest.customer_id == User.id).filter(
-                ServiceRequest.date_of_request == search_text
+                func.date(ServiceRequest.date_of_request) == search_text  # Extract date part for comparison
             ).all()
         elif search_by == 'location':
             results = ServiceRequest.query.join(User, ServiceRequest.customer_id == User.id).filter(
