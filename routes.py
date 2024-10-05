@@ -236,7 +236,7 @@ def reject_service(service_id):
 @app.route('/customer_dashboard')
 def customer_dashboard():
     user_id = session.get('user_id')
-
+    user = User.query.get(user_id)  # Query the User table for the user
     customer = User.query.filter_by(id=user_id, role='customer').first()
     # Fetch all available services
     services = Service.query.filter_by(is_active=True).all()  # Assuming you want only active services
@@ -248,7 +248,7 @@ def customer_dashboard():
         .filter(ServiceRequest.customer_id == user_id) \
         .all()
 
-    return render_template('customer_dashboard.html', customer=customer, services=services, service_history=service_history)
+    return render_template('customer_dashboard.html', customer=customer, services=services, service_history=service_history, user=user)
 
 @app.route('/book_service', methods=['POST'])
 def book_service():

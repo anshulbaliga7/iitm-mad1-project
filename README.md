@@ -4,6 +4,8 @@
 The Household Services Application is designed to streamline the process of connecting customers with professionals for household services like plumbing, electrical work, cleaning, etc. The application serves three types of users: customers, service professionals, and administrators. The platform offers an easy way for users to book services, manage requests, and track status updates.
 ![High Level Design](initial-draft-HLD.png)
 
+The schema consists of four tables: User, Services, ServiceRequest, and Logs.
+![Table Schema](initial-draft-schema.png)
 
 
 ## Objectives
