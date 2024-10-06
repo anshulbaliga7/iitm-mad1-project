@@ -13,34 +13,36 @@
             font-family: 'Arial', sans-serif;
         }
         .navbar {
-            background-color: rgba(0, 0, 0, 0.7);
+            background-color: rgba(0, 0, 0, 0.8);
         }
         .navbar-brand {
-            font-size: 1.5em;
+            font-size: 1.8em;
             font-weight: bold;
         }
         .navbar-nav .nav-link {
             color: #fff !important;
+            font-size: 1.1em;
         }
         .container {
             text-align: center;
-            margin-top: 15%;
-            background: rgba(0, 0, 0, 0.5);
-            padding: 20px;
-            border-radius: 10px;
+            margin-top: 10%;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
         }
         h1 {
-            font-size: 3em;
+            font-size: 3.5em;
             animation: fadeIn 2s ease-in-out;
         }
         p {
-            font-size: 1.2em;
+            font-size: 1.3em;
             margin: 20px 0;
         }
         .btn-primary {
             background-color: #ff9800;
             border: none;
-            padding: 10px 20px;
+            padding: 12px 25px;
             font-size: 1.2em;
             transition: background-color 0.3s ease;
         }
@@ -59,41 +61,44 @@
 </head>
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark">
-        <a class="navbar-brand" href="#">XYZ</a>
+        <a class="navbar-brand" href="">HomeCare+</a>
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav ml-auto">
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" id="servicesDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                <li class="nav-item dropdown mr-3">
+                    <a class="nav-link dropdown-toggle" href="#" id="servicesDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" title="View our services">
                         Services
                     </a>
                     <div class="dropdown-menu" aria-labelledby="servicesDropdown">
                         <a class="dropdown-item" href="#">Plumbing</a>
                         <a class="dropdown-item" href="#">Electrical</a>
                         <a class="dropdown-item" href="#">Cleaning</a>
+                        <a class="dropdown-item" href="#">Tiling</a>
+                        <a class="dropdown-item" href="#">Servicing</a>
                     </div>
                 </li>
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" id="locationsDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                <li class="nav-item dropdown mr-3">
+                    <a class="nav-link dropdown-toggle" href="#" id="locationsDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" title="Select your location">
                         Locations
                     </a>
                     <div class="dropdown-menu" aria-labelledby="locationsDropdown">
-                        <a class="dropdown-item" href="#">New York</a>
-                        <a class="dropdown-item" href="#">Los Angeles</a>
-                        <a class="dropdown-item" href="#">Chicago</a>
+                        <a class="dropdown-item" href="#">Bangalore</a>
+                        <a class="dropdown-item" href="#">Chennai</a>
+                        <a class="dropdown-item" href="#">Delhi</a>
                     </div>
                 </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#">About Us</a>
+                <li class="nav-item mr-3">
+                    <a class="nav-link" href="#" title="Learn more about us">About Us</a>
                 </li>
             </ul>
         </div>
     </nav>
     <div class="container">
-        <h1 class="mt-5">Welcome to XYZ Household Services</h1>
-        <p>"Your comfort is our priority"</p>
+        <h1 class="mt-5">Welcome to HomeCare+</h1>
+        <p>Caring for your home, one service at a time</p>
+        <p>Household Services Application</p>
         <a href="{{ url_for('login') }}" class="btn btn-primary mt-3">Get Started</a>
     </div>
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>

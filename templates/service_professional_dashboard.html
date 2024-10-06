@@ -10,9 +10,9 @@
             background-color: violet;
         }
         .navbar .nav-link {
-            color: white; 
-            margin-left: 30px; 
-            font-weight: bold; 
+            color: white;
+            margin-left: 165px;
+            font-weight: bold;
         }
         .navbar .nav-link:hover {
             color: #f8f9fa;
@@ -40,13 +40,13 @@
 </head>
 <body>
     <nav class="navbar navbar-expand-lg navbar-light">
-        <a class="navbar-brand" href="#">Service Professional Dashboard</a>
+        <a class="navbar-brand" href="#"><b>Service Professional Dashboard</b></a>
         <div class="collapse navbar-collapse">
             <ul class="navbar-nav mr-auto">
-                <li class="nav-item"><a class="nav-link" href="{{ url_for('service_professional_dashboard') }}">Home</a></li>
-                <li class="nav-item"><a class="nav-link" href="{{ url_for('service_professional_search') }}">Search</a></li>
-                <li class="nav-item"><a class="nav-link" href="{{ url_for('service_professional_summary') }}">Summary</a></li>
-                <li class="nav-item"><a class="nav-link" href="{{ url_for('logout') }}">Logout</a></li>
+                <li class="nav-item"><a class="nav-link" href="{{ url_for('service_professional_dashboard') }}"><u><b>Home</b></u></a></li>
+                <li class="nav-item"><a class="nav-link" href="{{ url_for('service_professional_search') }}"><b>Search</b></a></li>
+                <li class="nav-item"><a class="nav-link" href="{{ url_for('service_professional_summary') }}"><b>Summary</b></a></li>
+                <li class="nav-item"><a class="nav-link" href="{{ url_for('logout') }}"><b>Logout</b></a></li>
             </ul>
         </div>
     </nav>

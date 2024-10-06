@@ -69,18 +69,11 @@
     <!-- Navbar -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <a href="{{ url_for('home') }}" class="btn btn-back"><i class="fas fa-arrow-left"></i></a>
-        <a class="navbar-brand" href="#">XYZ Solutions</a>
-        <div class="collapse navbar-collapse justify-content-center">
-            <span class="navbar-text">
-                Login Page
-            </span>
-        </div>
+        <a class="navbar-brand" href="#">HomeCare+</a>
     </nav>
-
     <div class="container">
         <div class="login-box">
-            <a href="{{ url_for('service_professional_signup') }}" class="signup-link" style="float: right;">Signup for Service Professional</a>
-            <h2>Login</h2>
+            <h2 style="text-align: center;">Login</h2>
             <form method="POST" action="{{ url_for('login') }}">
                 <div class="form-group">
                     <input type="email" class="form-control" name="email" placeholder="Email" required>
@@ -93,7 +86,10 @@
                 </div>
                 <button type="submit" class="btn btn-login">Login</button>
             </form>
-            <a href="{{ url_for('customer_signup') }}" class="signup-link">Create account?</a>
+            <div style="text-align: center;">
+                <a href="{{ url_for('service_professional_signup') }}" class="signup-link">Signup for Service Professional</a><br><br>
+                <a href="{{ url_for('customer_signup') }}" class="signup-link">Create account?(Customer)</a>
+            </div>
         </div>
     </div>
 </body>
