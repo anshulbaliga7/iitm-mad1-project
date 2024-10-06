@@ -83,10 +83,11 @@
                     <div class="card service-card text-center">
                         <div class="card-body">
                             <h5 class="card-title">{{ service_group[0] }}</h5>
-                            <button class="btn btn-info" type="button" data-toggle="collapse" data-target="#serviceDetails{{ service_group[0] }}" aria-expanded="false" aria-controls="serviceDetails{{ service_group[0] }}">
+                            {% set safe_service_name = service_group[0].replace(' ', '_') %} <!-- Replace spaces with underscores -->
+                            <button class="btn btn-info" type="button" data-toggle="collapse" data-target="#serviceDetails{{ safe_service_name }}" aria-expanded="false" aria-controls="serviceDetails{{ safe_service_name }}">
                                 View Details
                             </button>
-                            <div class="collapse" id="serviceDetails{{ service_group[0] }}">
+                            <div class="collapse" id="serviceDetails{{ safe_service_name }}">
                                 <ul class="list-group mt-3">
                                     {% for service in service_group[1] %}
                                     <li class="list-group-item">

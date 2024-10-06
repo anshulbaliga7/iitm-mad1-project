@@ -19,6 +19,10 @@ def allowed_file(filename):
 def home():
     return render_template('home.html')
 
+@app.route('/service_professional_blocked')
+def service_professional_blocked():
+    return render_template('service_professional_blocked.html')
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
@@ -164,7 +168,7 @@ def service_professional_dashboard():
         return render_template('service_professional_dashboard.html', today_services=today_services, closed_services=closed_services, professional=professional)
     else:
         flash('Access denied: Your account is either blocked or not approved.', 'error')
-        return redirect(url_for('home'))  # Redirect to home or another appropriate page
+        return redirect(url_for('service_professional_blocked'))  # Redirect to home or another appropriate page
 
 @app.route('/update_profile', methods=['POST'])
 def update_profile():
