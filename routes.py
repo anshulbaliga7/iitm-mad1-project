@@ -27,6 +27,10 @@ def service_professional_blocked():
 def customer_blocked():
     return render_template('customer_blocked.html')  # Render the blocked page template
 
+@app.route('/any_page_noaccess')
+def any_page_noaccess():
+    return render_template('any_page_noaccess.html')  # Render the blocked page template
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
@@ -142,8 +146,9 @@ def service_professional_signup():
 def admin_dashboard():
     services = Service.query.all()
     professionals = User.query.filter_by(role='service_professional').all()  # Fetch professionals
+    customers = User.query.filter_by(role='customer').all()
     service_requests = ServiceRequest.query.all()  # Fetch all service requests
-    return render_template('admin_dashboard.html', services=services, professionals=professionals, service_requests=service_requests)
+    return render_template('admin_dashboard.html', services=services, professionals=professionals, customers=customers, service_requests=service_requests)
 
 @app.route('/admin/block_customer/<int:customer_id>', methods=['POST'])
 def block_customer(customer_id):
@@ -161,6 +166,33 @@ def unblock_customer(customer_id):
         customer.blocked = 0  # Set blocked status to 0 (unblocked)
         db.session.commit()  # Commit the changes
     return redirect(url_for('admin_search'))  # Redirect back to the search page
+
+@app.route('/admin/block_customer1/<int:customer_id>', methods=['POST'])
+def block_customer1(customer_id):
+    customer = User.query.get(customer_id)  # Assuming you have a Customer model
+    if customer:
+        customer.blocked = 1  # Set blocked status
+        customer.approval = 0  # Set approval status
+        db.session.commit()  # Commit the changes
+    return redirect(url_for('admin_dashboard'))  # Redirect back to the search page
+
+@app.route('/admin/unblock_customer1/<int:customer_id>', methods=['POST'])
+def unblock_customer1(customer_id):
+    customer = User.query.get(customer_id)  # Assuming you have a User model
+    if customer:
+        customer.blocked = 0  # Set blocked status to 0 (unblocked)
+        db.session.commit()  # Commit the changes
+    return redirect(url_for('admin_dashboard'))  # Redirect back to the search page
+
+@app.route('/admin/delete_customer/<int:customer_id>', methods=['POST'])
+def delete_customer(customer_id):
+    customer = User.query.get(customer_id)
+    if customer:
+        db.session.delete(customer)  # Remove the professional from the User table
+        db.session.commit()
+    else:
+        flash('Professional not found!', 'error')
+    return redirect(url_for('admin_dashboard'))
 
 @app.route('/admin/accept_professional/<int:professional_id>', methods=['POST'])
 def accept_professional(professional_id):
@@ -198,7 +230,8 @@ def service_professional_dashboard():
 
     # Fetch the professional's details
     professional = User.query.filter_by(id=current_professional_id, role='service_professional').first()
-
+    if not current_professional_id:
+        return redirect(url_for('any_page_noaccess'))
     # Check if the professional is approved and not blocked
     #add this once done:  and professional.approval == 1 and professional.blocked == 0
     if professional and professional.approval == 1 and professional.blocked == 0:
@@ -291,7 +324,8 @@ def reject_service(service_id):
 def customer_dashboard():
     user_id = session.get('user_id')
     user = User.query.get(user_id)  # Query the User table for the user
-
+    if not user_id:
+        return redirect(url_for('any_page_noaccess'))
     # Check if the user is blocked
     if user and user.blocked == 1:
         return redirect(url_for('customer_blocked'))  # Redirect to the blocked page
