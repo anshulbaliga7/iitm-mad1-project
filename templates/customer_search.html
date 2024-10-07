@@ -104,8 +104,8 @@
                 <tr>
                     <td>{{ service.name }}</td>
                     <td>{{ service.description }}</td>
-                    <td>${{ service.price }}</td>
-                    <td>{{ service.time_required }} hours</td>
+                    <td>₹{{ service.price }}</td>
+                    <td>{{ service.time_required }}</td>
                     <td>{{ service.category }}</td>
                     <td>
                         <button class="btn btn-primary" data-toggle="modal" data-target="#bookingModal{{ service.id }}">
@@ -128,8 +128,8 @@
                                 <div class="modal-body">
                                     <input type="hidden" name="service_id" value="{{ service.id }}">
                                     <p><strong>Description:</strong> {{ service.description }}</p>
-                                    <p><strong>Price:</strong> ${{ service.price }}</p>
-                                    <p><strong>Time Required:</strong> {{ service.time_required }} hours</p>
+                                    <p><strong>Price:</strong> ₹{{ service.price }}</p>
+                                    <p><strong>Time Required:</strong> {{ service.time_required }}</p>
                                     <p><strong>Category:</strong> {{ service.category }}</p>
                                     <div class="form-group">
                                         <label for="date_of_request">Date of Request</label>

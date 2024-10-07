@@ -23,6 +23,10 @@ def home():
 def service_professional_blocked():
     return render_template('service_professional_blocked.html')
 
+@app.route('/customer_blocked')
+def customer_blocked():
+    return render_template('customer_blocked.html')  # Render the blocked page template
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
@@ -141,6 +145,52 @@ def admin_dashboard():
     service_requests = ServiceRequest.query.all()  # Fetch all service requests
     return render_template('admin_dashboard.html', services=services, professionals=professionals, service_requests=service_requests)
 
+@app.route('/admin/block_customer/<int:customer_id>', methods=['POST'])
+def block_customer(customer_id):
+    customer = User.query.get(customer_id)  # Assuming you have a Customer model
+    if customer:
+        customer.blocked = 1  # Set blocked status
+        customer.approval = 0  # Set approval status
+        db.session.commit()  # Commit the changes
+    return redirect(url_for('admin_search'))  # Redirect back to the search page
+
+@app.route('/admin/unblock_customer/<int:customer_id>', methods=['POST'])
+def unblock_customer(customer_id):
+    customer = User.query.get(customer_id)  # Assuming you have a User model
+    if customer:
+        customer.blocked = 0  # Set blocked status to 0 (unblocked)
+        db.session.commit()  # Commit the changes
+    return redirect(url_for('admin_search'))  # Redirect back to the search page
+
+@app.route('/admin/accept_professional/<int:professional_id>', methods=['POST'])
+def accept_professional(professional_id):
+    professional = User.query.get(professional_id)  # Assuming you have a User model
+    if professional:
+        professional.approval = True  # Set approval status to accepted
+        professional.blocked = False
+        db.session.commit()  # Commit the changes
+    return redirect(url_for('admin_search'))  # Redirect back to the search page
+
+@app.route('/admin/block_professional/<int:professional_id>', methods=['POST'])
+def block_professional(professional_id):
+    professional = User.query.get(professional_id)  # Assuming you have a User model
+    if professional:
+        professional.blocked = True  # Set blocked status
+        professional.approval = False
+        db.session.commit()  # Commit the changes
+    return redirect(url_for('admin_search'))  # Redirect back to the search page
+
+@app.route('/edit_service_request/<int:request_id>', methods=['POST'])
+def edit_service_request(request_id):
+    request_to_edit = ServiceRequest.query.get(request_id)  # Assuming you have a ServiceRequest model
+    if request_to_edit:
+        # Convert the date string to a datetime object
+        date_of_request_str = request.form['requested_date']
+        request_to_edit.date_of_request = datetime.strptime(date_of_request_str, '%Y-%m-%d').date()  # Adjust format if necessary
+        request_to_edit.remarks = request.form['remarks']
+        db.session.commit()  # Commit the changes
+    return redirect(url_for('customer_dashboard'))  # Redirect back to the customer dashboard
+
 @app.route('/service_professional_dashboard')
 def service_professional_dashboard():
     today = datetime.today().date()
@@ -241,7 +291,13 @@ def reject_service(service_id):
 def customer_dashboard():
     user_id = session.get('user_id')
     user = User.query.get(user_id)  # Query the User table for the user
+
+    # Check if the user is blocked
+    if user and user.blocked == 1:
+        return redirect(url_for('customer_blocked'))  # Redirect to the blocked page
+
     customer = User.query.filter_by(id=user_id, role='customer').first()
+    
     # Fetch all available services
     services = Service.query.filter_by(is_active=True).all()  # Assuming you want only active services
 
@@ -265,7 +321,8 @@ def book_service():
 
     # Assuming you have a way to get the current customer's ID
     customer_id = session.get('user_id')
-
+    service = Service.query.filter_by(id=service_id).first()
+    service_price = service.price
     # Create a new service request
     new_request = ServiceRequest(
         service_id=service_id,
@@ -273,7 +330,8 @@ def book_service():
         professional_id=None,  # Set to None as per your requirement
         service_status='Requested',
         date_of_request=date_of_request,
-        remarks=remarks
+        remarks=remarks,
+        cost=service_price
     )
 
     # Add to the session and commit to the database
@@ -598,12 +656,17 @@ def admin_summary():
     # Prepare data for charts
     service_counts = {}
     completion_counts = {'Requested': 0, 'Assigned': 0, 'Closed': 0}
-    user_registration_counts = {}
-    
+    revenue_data = {}
+
     for request in service_requests:
         # Count service statuses
         if request.service_status in completion_counts:
             completion_counts[request.service_status] += 1
+
+        # Calculate total revenue per service
+        service_name = request.service.name
+        if request.cost is not None:  # Check if cost is not None
+            revenue_data[service_name] = revenue_data.get(service_name, 0) + request.cost
 
     # Fetch services data
     services = Service.query.all()
@@ -614,7 +677,7 @@ def admin_summary():
     return render_template('admin_summary.html', 
                            service_counts=service_counts, 
                            completion_counts=completion_counts, 
-                           user_registration_counts=user_registration_counts)
+                           revenue_data=revenue_data)  # Pass revenue data to the template
 
 @app.route('/service_professional_summary')
 def service_professional_summary():
@@ -643,25 +706,39 @@ def service_professional_summary():
 
 @app.route('/customer_summary')
 def customer_summary():
-    # Fetch service requests data
-    service_requests = ServiceRequest.query.all()
+    # Assuming you have a way to get the current customer's ID from the session
+    customer_id = session.get('user_id')
+    
+    if not customer_id:
+        # Handle the case where the customer is not logged in or session expired
+        flash('Please log in to view your summary.', 'error')
+        return redirect(url_for('login'))
+
+    # Fetch service requests data for the current customer only
+    service_requests = ServiceRequest.query.filter_by(customer_id=customer_id).all()
 
     # Prepare data for charts
     service_counts = {}
     completion_counts = {'Requested': 0, 'Assigned': 0, 'Closed': 0}
-    user_registration_counts = {}
-    
+    revenue_data = {}  # Dictionary to track revenue for each service
+
     for request in service_requests:
-        # Count service statuses
+        # Count service statuses for the logged-in customer
         if request.service_status in completion_counts:
             completion_counts[request.service_status] += 1
 
-    # Fetch services data
-    services = Service.query.all()
-    for service in services:
-        service_name = service.name
+        # Fetch the service name for each service request
+        service_name = request.service.name  # Assuming there is a relationship between ServiceRequest and Service
+
+        # Count how many times each service was requested
         service_counts[service_name] = service_counts.get(service_name, 0) + 1
+
+        # Add the cost to revenue data if it's not None
+        if request.cost is not None:
+            revenue_data[service_name] = revenue_data.get(service_name, 0) + request.cost
 
     return render_template('customer_summary.html', 
                            service_counts=service_counts, 
-                           completion_counts=completion_counts)
+                           completion_counts=completion_counts,
+                           revenue_data=revenue_data)
+

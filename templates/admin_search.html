@@ -113,6 +113,8 @@
                             <th>Phone Number</th>
                             <th>Address</th>
                             <th>Pincode</th>
+                            <th>Status</th>
+                            <th>Action</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -124,6 +126,61 @@
                             <td>{{ result.phone_number }}</td>
                             <td>{{ result.address }}</td>
                             <td>{{ result.pincode }}</td>
+                            <td>{{ 'Blocked' if result.blocked == 1 else 'Active' }}</td>
+                            <td>
+                                <!-- Block/Unblock Button -->
+                                {% if result.blocked == 1 %}
+                                    <button class="btn btn-success" data-toggle="modal" data-target="#confirmUnblockModal{{ result.id }}">Unblock</button>
+
+                                    <!-- Confirmation Modal for Unblocking -->
+                                    <div class="modal fade" id="confirmUnblockModal{{ result.id }}" tabindex="-1" role="dialog" aria-labelledby="confirmUnblockModalLabel" aria-hidden="true">
+                                        <div class="modal-dialog" role="document">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title" id="confirmUnblockModalLabel">Confirm Unblock</h5>
+                                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                        <span aria-hidden="true">&times;</span>
+                                                    </button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    Are you sure you want to unblock this customer?
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <form action="{{ url_for('unblock_customer', customer_id=result.id) }}" method="POST">
+                                                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                                                        <button type="submit" class="btn btn-success">Unblock</button>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% else %}
+                                    <button class="btn btn-danger" data-toggle="modal" data-target="#confirmBlockModal{{ result.id }}">Block</button>
+
+                                    <!-- Confirmation Modal for Blocking -->
+                                    <div class="modal fade" id="confirmBlockModal{{ result.id }}" tabindex="-1" role="dialog" aria-labelledby="confirmBlockModalLabel" aria-hidden="true">
+                                        <div class="modal-dialog" role="document">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title" id="confirmBlockModalLabel">Confirm Block</h5>
+                                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                        <span aria-hidden="true">&times;</span>
+                                                    </button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    Are you sure you want to block this customer?
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <form action="{{ url_for('block_customer', customer_id=result.id) }}" method="POST">
+                                                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                                                        <button type="submit" class="btn btn-danger">Block</button>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endif %}
+                            </td>
                         </tr>
                         {% endfor %}
                     </tbody>
@@ -142,6 +199,7 @@
                             <th>Experience</th>
                             <th>Service Name</th>
                             <th>Approval Status</th>
+                            <th>Action</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -155,7 +213,60 @@
                             <td>{{ result.pincode }}</td>
                             <td>{{ result.experience }}</td>
                             <td>{{ result.service_name }}</td>
-                            <td>{{ 'Rejected' if result.approval == 0 else 'Accepted' if result.approval == 1 else 'Pending' }}</td>
+                            <td>{{ 'Pending' if result.approval == 0 and result.blocked == 0 else 'Accepted' if result.approval == 1 else 'Rejected' if result.blocked == 1 }}</td>
+                            <td>
+                                {% if result.approval == 0 %}
+                                    <button class="btn btn-success" data-toggle="modal" data-target="#confirmAcceptModal{{ result.id }}">Accept</button>
+
+                                    <!-- Confirmation Modal for Accepting -->
+                                    <div class="modal fade" id="confirmAcceptModal{{ result.id }}" tabindex="-1" role="dialog" aria-labelledby="confirmAcceptModalLabel" aria-hidden="true">
+                                        <div class="modal-dialog" role="document">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title" id="confirmAcceptModalLabel">Confirm Accept</h5>
+                                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                        <span aria-hidden="true">&times;</span>
+                                                    </button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    Are you sure you want to accept this professional?
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <form action="{{ url_for('accept_professional', professional_id=result.id) }}" method="POST">
+                                                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                                                        <button type="submit" class="btn btn-success">Accept</button>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% elif result.approval == 1 %}
+                                    <button class="btn btn-danger" data-toggle="modal" data-target="#confirmBlockModal{{ result.id }}">Block</button>
+
+                                    <!-- Confirmation Modal for Blocking -->
+                                    <div class="modal fade" id="confirmBlockModal{{ result.id }}" tabindex="-1" role="dialog" aria-labelledby="confirmBlockModalLabel" aria-hidden="true">
+                                        <div class="modal-dialog" role="document">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title" id="confirmBlockModalLabel">Confirm Block</h5>
+                                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                        <span aria-hidden="true">&times;</span>
+                                                    </button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    Are you sure you want to block this professional?
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <form action="{{ url_for('block_professional', professional_id=result.id) }}" method="POST">
+                                                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                                                        <button type="submit" class="btn btn-danger">Block</button>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endif %}
+                            </td>
                         </tr>
                         {% endfor %}
                     </tbody>

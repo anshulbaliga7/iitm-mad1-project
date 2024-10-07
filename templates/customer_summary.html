@@ -67,7 +67,7 @@
                         <div class="chart-container">
                             <canvas id="serviceStatusChart"></canvas>
                         </div>
-                        <p class="mt-2">This chart shows the current status of service requests.</p>
+                        <p class="mt-2">Current status of service requests.</p>
                     </div>
                 </div>
             </div>
@@ -81,7 +81,7 @@
                         <div class="chart-container">
                             <canvas id="serviceRequestsChart"></canvas>
                         </div>
-                        <p class="mt-2">This chart displays the number of requests for each service.</p>
+                        <p class="mt-2">Number of requests for each service.</p>
                     </div>
                 </div>
             </div>
@@ -89,13 +89,13 @@
             <div class="col-md-4">
                 <div class="card">
                     <div class="card-header">
-                        <h4>User Registration Trends</h4>
+                        <h4>Revenue Generated per Service</h4>
                     </div>
                     <div class="card-body">
                         <div class="chart-container">
-                            <canvas id="userRegistrationChart"></canvas>
+                            <canvas id="revenueChart"></canvas>
                         </div>
-                        <p class="mt-2">This chart illustrates the trends in user registrations over time.</p>
+                        <p class="mt-2">Total revenue generated from each service type.</p>
                     </div>
                 </div>
             </div>
@@ -153,6 +153,42 @@
                 }
             }
         });
+
+        // Revenue Generated per Service Chart
+const revenueCtx = document.getElementById('revenueChart').getContext('2d');
+const revenueData = JSON.parse('{{ revenue_data|tojson }}');
+const revenueLabels = Object.keys(revenueData);
+const totalRevenue = Object.values(revenueData);
+const revenueChart = new Chart(revenueCtx, {
+    type: 'bar', // Change to 'line' for a line chart
+    data: {
+        labels: revenueLabels,
+        datasets: [{
+            label: 'Total Revenue',
+            data: totalRevenue,
+            backgroundColor: 'rgba(153, 102, 255, 0.6)',
+            borderColor: 'rgba(153, 102, 255, 1)',
+            borderWidth: 1
+        }]
+    },
+    options: {
+        scales: {
+            y: {
+                beginAtZero: true,
+                title: {
+                    display: true,
+                    text: 'Total Revenue (in currency)'
+                }
+            },
+            x: {
+                title: {
+                    display: true,
+                    text: 'Service Types'
+                }
+            }
+        }
+    }
+});
 
     </script>
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
