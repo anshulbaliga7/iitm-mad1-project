@@ -160,7 +160,7 @@ const revenueData = JSON.parse('{{ revenue_data|tojson }}');
 const revenueLabels = Object.keys(revenueData);
 const totalRevenue = Object.values(revenueData);
 const revenueChart = new Chart(revenueCtx, {
-    type: 'bar', // Change to 'line' for a line chart
+    type: 'bar', 
     data: {
         labels: revenueLabels,
         datasets: [{

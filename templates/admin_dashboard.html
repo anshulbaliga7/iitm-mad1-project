@@ -247,7 +247,7 @@
                     <td>{{ professional.email }}</td>
                     <td>{{ professional.experience }}</td>
                     <td>{{ professional.service_name }}</td>
-                    <td>{{ 'Approved' if professional.approval == 1 else ('Rejected' if professional.approval == 0 else 'Pending') }}</td> <!-- New Approval Status Column -->
+                    <td>{{ 'Approved' if professional.approval == 1 else ('Rejected' if professional.approval == 0 else 'Pending') }}</td> 
                     <td>
                         <form action="{{ url_for('approve_professional', professional_id=professional.id) }}" method="POST" style="display:inline;">
                             <button type="submit" class="btn btn-success btn-sm">Approve</button>
@@ -316,7 +316,7 @@
                     <td>{{ customer.phone_number }}</td>
                     <td>{{ customer.address }}</td>
                     <td>{{ customer.pincode }}</td>
-                    <td>{{ 'Active' if customer.blocked == 0 else ('Blocked' if customer.blocked == 1) }}</td> <!-- New Approval Status Column -->
+                    <td>{{ 'Active' if customer.blocked == 0 else ('Blocked' if customer.blocked == 1) }}</td> 
                     <td>
                         <form action="{{ url_for('block_customer1', customer_id=customer.id) }}" method="POST" style="display:inline;">
                             <button type="submit" class="btn btn-success btn-sm">Block</button>

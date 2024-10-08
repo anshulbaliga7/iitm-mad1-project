@@ -715,28 +715,38 @@ def admin_summary():
 
 @app.route('/service_professional_summary')
 def service_professional_summary():
-    # Fetch service requests data
-    service_requests = ServiceRequest.query.all()
+    # Get the logged-in professional's ID
+    professional_id = session.get('user_id')
+
+    # Fetch service requests assigned to this professional
+    service_requests = ServiceRequest.query.filter_by(professional_id=professional_id).all()
 
     # Prepare data for charts
-    service_counts = {}
     completion_counts = {'Requested': 0, 'Assigned': 0, 'Closed': 0}
-    user_registration_counts = {}
-    
+    customer_request_counts = {}
+
     for request in service_requests:
         # Count service statuses
         if request.service_status in completion_counts:
             completion_counts[request.service_status] += 1
 
-    # Fetch services data
-    services = Service.query.all()
-    for service in services:
-        service_name = service.name
-        service_counts[service_name] = service_counts.get(service_name, 0) + 1
+        # Get the customer's name by fetching from the User table based on customer_id
+        customer = User.query.filter_by(id=request.customer_id).first()
+        customer_name = customer.name if customer else 'Unknown'
+
+        # Count the number of requests per customer for this service
+        if customer_name not in customer_request_counts:
+            customer_request_counts[customer_name] = 0
+        customer_request_counts[customer_name] += 1
+
+    # Fetch the single service for the logged-in professional
+    service_name = service_requests[0].service.name if service_requests else 'No service assigned'
 
     return render_template('service_professional_summary.html', 
-                           service_counts=service_counts, 
+                           service_name=service_name,
+                           customer_request_counts=customer_request_counts, 
                            completion_counts=completion_counts)
+
 
 @app.route('/customer_summary')
 def customer_summary():

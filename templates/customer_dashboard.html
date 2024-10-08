@@ -72,7 +72,7 @@
         </div>
     </div>
     <div class="container mt-5">
-        <h2>Welcome, {{ user.name }}!</h2>  <!-- Display the user's name -->
+        <h2>Welcome, {{ user.name }}!</h2> 
 
         <div class="rounded border p-4 mb-4">
             <h4>Available Services:</h4>
@@ -83,7 +83,7 @@
                     <div class="card service-card text-center">
                         <div class="card-body">
                             <h5 class="card-title">{{ service_group[0] }}</h5>
-                            {% set safe_service_name = service_group[0].replace(' ', '_') %} <!-- Replace spaces with underscores -->
+                            {% set safe_service_name = service_group[0].replace(' ', '_') %} 
                             <button class="btn btn-info" type="button" data-toggle="collapse" data-target="#serviceDetails{{ safe_service_name }}" aria-expanded="false" aria-controls="serviceDetails{{ safe_service_name }}">
                                 View Details
                             </button>
