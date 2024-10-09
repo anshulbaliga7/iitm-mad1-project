@@ -45,15 +45,11 @@ To set up the Household Services Application locally, follow these steps:
    ```bash
    git clone https://github.com/anshulbaliga7/iitm-mad1-project
    ```
-2. Navigate to the project directory:
-   ```bash
-   cd household-services-application
-   ```
-3. Set up a virtual environment:
+2. Set up a virtual environment:
    ```bash
    python -m venv venv
    ```
-4. Activate the virtual environment:
+3. Activate the virtual environment:
    - On Windows:
      ```bash
      venv\Scripts\activate
@@ -62,28 +58,31 @@ To set up the Household Services Application locally, follow these steps:
      ```bash
      source venv/bin/activate
      ```
-5. Install dependencies:
+4. Install dependencies:
    ```bash
    pip install -r requirements.txt
    ```
-6. Create the SQLite database: You can use SQLite DB Browser or any SQLite tool to create the necessary tables using the provided models.
-7. Run the Flask application:
+5. Create the SQLite database: You can use SQLite DB Browser or any SQLite tool to create the necessary tables using the provided models.
+6. Run the Flask application:
    ```bash
    flask run
    ```
-8. Access the application: Open your browser and go to `http://127.0.0.1:5000/`.
+7. Access the application: Open your browser and go to `http://127.0.0.1:5000/`.
 
 ## Usage
 ### For Customers:
 - Register for an account.
 - Browse available services and request one.
 - Track the status of requested services in your dashboard.
+- Performs functions like: Closing requests, Editing requests, Searching for requests and Summary via graphs.
 
 ### For Service Professionals:
 - Sign up to provide services.
 - Manage service requests assigned to you.
 - Update the status of services you have completed.
+- Performs functions like: Approve/Reject Customer requests, Search customers/requests and Summary via graphs.
 
 ### For Administrators:
 - Monitor service requests, users, and professionals.
-- Manage approvals and block/unblock user accounts.
+- Manage approvals and block/unblock user accounts(Customers and Service Professionals).
+- Performs functions like: Search services/requests/customers/professionals, and Summary via graphs.
