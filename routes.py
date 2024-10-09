@@ -526,7 +526,6 @@ def close_service_request(request_id):
 
     return redirect(url_for('customer_dashboard'))  
 
-
 @app.route('/close_service1/<int:service_id>', methods=['POST'])
 def close_service1(service_id):
     service_request = ServiceRequest.query.get(service_id)
@@ -766,7 +765,6 @@ def service_professional_summary():
                            customer_request_counts=customer_request_counts, 
                            completion_counts=completion_counts)
 
-
 @app.route('/customer_summary')
 def customer_summary():
     customer_id = session.get('user_id')
@@ -795,4 +793,3 @@ def customer_summary():
                            service_counts=service_counts, 
                            completion_counts=completion_counts,
                            revenue_data=revenue_data)
-
