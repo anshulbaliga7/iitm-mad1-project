@@ -341,8 +341,15 @@ def customer_dashboard():
         .join(User, ServiceRequest.customer_id == User.id) \
         .filter(ServiceRequest.customer_id == user_id) \
         .all()
+    
+    top_rated_professionals = User.query \
+        .filter_by(role='service_professional') \
+        .filter(User.rating != 0) \
+        .order_by(User.rating.desc()) \
+        .limit(10) \
+        .all()  # Fetch top 10 professionals based on rating
 
-    return render_template('customer_dashboard.html', customer=customer, services=services, service_history=service_history, user=user)
+    return render_template('customer_dashboard.html', customer=customer, services=services, service_history=service_history, user=user, top_rated_professionals=top_rated_professionals)
 
 @app.route('/book_service', methods=['POST'])
 def book_service():
@@ -380,6 +387,7 @@ def book_service1():
     service_id = request.form['service_id']
     date_of_request_str = request.form['date_of_request']
     remarks = request.form['remarks']
+    cost = request.form['payment_amount']
     
     # Convert the date string to a datetime object
     date_of_request = datetime.strptime(date_of_request_str, '%Y-%m-%d').date()  # Adjust format if necessary
@@ -394,7 +402,8 @@ def book_service1():
         professional_id=None,  # Set to None as per your requirement
         service_status='Requested',
         date_of_request=date_of_request,
-        remarks=remarks
+        remarks=remarks,
+        cost=cost
     )
 
     # Add to the session and commit to the database
@@ -460,12 +469,27 @@ def close_service_request(request_id):
     if request_to_close:
         request_to_close.service_status = 'Closed'  # Update the status
         request_to_close.remarks = request.form.get('remarks', '')  # Capture remarks
-        db.session.commit()  # Commit the changes
+        request_to_close.date_of_completion = datetime.now()
+        rating = request.form.get('rating')  # Get the rating from the form
+
+        if rating:
+            rating_value = int(rating)  # Convert to int
+            # Fetch the professional associated with the service request
+            professional_id = request_to_close.professional_id  # Assuming you have this field
+            professional = User.query.get(professional_id)  # Fetch the professional from User table
+            
+            if professional:  # Check if the professional exists
+                # Update the professional's rating field
+                professional.rating = rating_value  # Update with the new rating
+                db.session.commit()  # Commit changes to User table
+
+        db.session.commit()  # Commit changes to ServiceRequest table
         flash('Service request closed successfully!', 'success')
     else:
         flash('Service request not found!', 'error')
 
     return redirect(url_for('customer_dashboard'))  # Redirect back to the dashboard
+
 
 @app.route('/close_service1/<int:service_id>', methods=['POST'])
 def close_service1(service_id):

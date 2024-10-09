@@ -160,7 +160,56 @@
                 {% endfor %}
             </div>
         </div>
-
+        <br><br><br><br>
+        <h4>Top Rated Professionals</h4>
+            <table class="table table-striped mt-4">
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th>Professional Name</th>
+                <th>Service Name</th>
+                <th>Experience (in years)</th>
+                <th>Rating(Customer Experience)</th>
+            </tr>
+            </thead>
+        <tbody>
+            {% for professional in top_rated_professionals %}
+        <tr>
+            <td>
+                <a href="#" data-toggle="modal" data-target="#viewProfessionalModal{{ professional.id }}">{{ professional.id }}</a>
+            </td>
+            <td>{{ professional.name }}</td>
+            <td>{{ professional.service_name }}</td>
+            <td>{{ professional.experience }}</td>
+            <td>{{ professional.rating }}</td>
+        </tr>
+        <!-- View Professional Modal -->
+        <div class="modal fade" id="viewProfessionalModal{{ professional.id }}" tabindex="-1" role="dialog" aria-labelledby="viewProfessionalModalLabel{{ professional.id }}" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="viewProfessionalModalLabel{{ professional.id }}">Professional Details</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <p><strong>ID:</strong> {{ professional.id }}</p>
+                        <p><strong>Name:</strong> {{ professional.name }}</p>
+                        <p><strong>Experience:</strong> {{ professional.experience }}</p>
+                        <p><strong>Service Name:</strong> {{ professional.service_name }}</p>
+                        <p><strong>Rating:</strong> {{ professional.rating }}</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </tbody>
+</table>
+        <br><br>
         <h4>Service History</h4>
         <table class="table table-striped mt-4">
             <thead>
@@ -198,6 +247,15 @@
                         <button class="btn btn-info btn-sm" data-toggle="modal" data-target="#editModal{{ request.id }}">
                             Edit
                         </button>
+                        {% elif request.service_status == 'Assigned' %}
+                        <button class="btn btn-warning btn-sm" data-toggle="modal" data-target="#confirmCloseModal{{ request.id }}" 
+                            data-description="{{ request.service.description }}"
+                            data-date="{{ request.date_of_request }}"
+                            data-professional-id="{{ request.professional.id if request.professional else 'N/A' }}"
+                            data-professional-name="{{ request.professional.name if request.professional else 'N/A' }}"
+                            data-contact-number="{{ request.professional.phone_number if request.professional else 'N/A' }}">
+                            Close it?
+                        </button>
                         {% endif %}
                     </td>
                 </tr>
@@ -227,48 +285,52 @@
                 </div>
 
                 <!-- Confirmation Modal -->
-                <div class="modal fade" id="confirmCloseModal{{ request.id }}" tabindex="-1" role="dialog" aria-labelledby="confirmCloseModalLabel{{ request.id }}" aria-hidden="true">
-                    <div class="modal-dialog" role="document">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <h5 class="modal-title" id="confirmCloseModalLabel{{ request.id }}">Close Service Request: {{ request.service.name }}</h5>
-                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                    <span aria-hidden="true">&times;</span>
-                                </button>
-                            </div>
-                            <div class="modal-body">
-                                <p><strong>Description:</strong> {{ request.service.description }}</p>
-                                <p><strong>Date:</strong> {{ request.date_of_request }}</p>
-                                <p><strong>Professional ID:</strong> {{ request.professional.id if request.professional else 'N/A' }}</p>
-                                <p><strong>Professional Name:</strong> {{ request.professional.name if request.professional else 'N/A' }}</p>
-                                <p><strong>Contact Number:</strong> {{ request.professional.phone_number if request.professional else 'N/A' }}</p>
-                                <p><strong>Service Rating:</strong></p>
-                                <div class="star-rating">
-                                    <input type="radio" id="star5{{ request.id }}" name="rating{{ request.id }}" value="5" />
-                                    <label for="star5{{ request.id }}">★</label>
-                                    <input type="radio" id="star4{{ request.id }}" name="rating{{ request.id }}" value="4" />
-                                    <label for="star4{{ request.id }}">★</label>
-                                    <input type="radio" id="star3{{ request.id }}" name="rating{{ request.id }}" value="3" />
-                                    <label for="star3{{ request.id }}">★</label>
-                                    <input type="radio" id="star2{{ request.id }}" name="rating{{ request.id }}" value="2" />
-                                    <label for="star2{{ request.id }}">★</label>
-                                    <input type="radio" id="star1{{ request.id }}" name="rating{{ request.id }}" value="1" />
-                                    <label for="star1{{ request.id }}">★</label>
-                                </div>
-                            </div>
-                            <div class="modal-footer">
-                                <form action="{{ url_for('close_service_request', request_id=request.id) }}" method="POST">
-                                    <div class="form-group mt-3">
-                                        <label for="remarks{{ request.id }}">Remarks (if any):</label>
-                                        <textarea class="form-control" id="remarks{{ request.id }}" name="remarks" rows="3" required></textarea>
-                                    </div>
-                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                                    <button type="submit" class="btn btn-danger">Confirm</button>
-                                </form>
-                            </div>
-                        </div>
+<div class="modal fade" id="confirmCloseModal{{ request.id }}" tabindex="-1" role="dialog" aria-labelledby="confirmCloseModalLabel{{ request.id }}" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="confirmCloseModalLabel{{ request.id }}">Close Service Request: {{ request.service.name }}</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p><strong>Description:</strong> {{ request.service.description }}</p>
+                <p><strong>Date:</strong> {{ request.date_of_request }}</p>
+                <p><strong>Professional ID:</strong> {{ request.professional.id if request.professional else 'N/A' }}</p>
+                <p><strong>Professional Name:</strong> {{ request.professional.name if request.professional else 'N/A' }}</p>
+                <p><strong>Contact Number:</strong> {{ request.professional.phone_number if request.professional else 'N/A' }}</p>
+
+                <!-- Rating Section inside form -->
+                <form action="{{ url_for('close_service_request', request_id=request.id) }}" method="POST">
+                    <p><strong>Service Rating:</strong></p>
+                    <div class="star-rating">
+                        <input type="radio" id="star5{{ request.id }}" name="rating" value="5" />
+                        <label for="star5{{ request.id }}">★</label>
+                        <input type="radio" id="star4{{ request.id }}" name="rating" value="4" />
+                        <label for="star4{{ request.id }}">★</label>
+                        <input type="radio" id="star3{{ request.id }}" name="rating" value="3" />
+                        <label for="star3{{ request.id }}">★</label>
+                        <input type="radio" id="star2{{ request.id }}" name="rating" value="2" />
+                        <label for="star2{{ request.id }}">★</label>
+                        <input type="radio" id="star1{{ request.id }}" name="rating" value="1" />
+                        <label for="star1{{ request.id }}">★</label>
                     </div>
-                </div>
+
+                    <div class="form-group mt-3">
+                        <label for="remarks{{ request.id }}">Remarks (if any):</label>
+                        <textarea class="form-control" id="remarks{{ request.id }}" name="remarks" rows="3" required></textarea>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-danger">Confirm</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
 
                 <!-- Edit Modal -->
                 <div class="modal fade" id="editModal{{ request.id }}" tabindex="-1" role="dialog" aria-labelledby="editModalLabel{{ request.id }}" aria-hidden="true">

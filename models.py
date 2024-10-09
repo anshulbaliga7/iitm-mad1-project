@@ -21,6 +21,7 @@ class User(db.Model):
     blocked = db.Column(db.Boolean, default=False)
     approval = db.Column(db.Boolean, nullable=True)  # Only for service professionals
     profile_photo = db.Column(db.String(200), nullable=True)  
+    rating = db.Column(db.Integer, nullable=True, default=0)
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -54,3 +55,9 @@ class ServiceRequest(db.Model):
     service = db.relationship('Service', backref=db.backref('requests', lazy=True))
     customer = db.relationship('User', foreign_keys=[customer_id], backref=db.backref('customer_requests', lazy=True))
     professional = db.relationship('User', foreign_keys=[professional_id], backref=db.backref('professional_requests', lazy=True))
+
+class Log(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    timestamp = db.Column(db.DateTime, nullable=False)
+    action = db.Column(db.String(255), nullable=False)
+    username = db.Column(db.String(80), nullable=False)
