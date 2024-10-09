@@ -2,7 +2,7 @@ from flask import render_template, request, redirect, url_for, session, flash
 from werkzeug.utils import secure_filename
 import os
 from app import app
-from models import db, User, Service, ServiceRequest
+from models import db, User, Service, ServiceRequest, Log
 from werkzeug.security import generate_password_hash
 from datetime import datetime
 from sqlalchemy import func
@@ -23,13 +23,18 @@ def home():
 def service_professional_blocked():
     return render_template('service_professional_blocked.html')
 
+@app.route('/admin_logs')
+def admin_logs():
+    logs = Log.query.all()  
+    return render_template('admin_logs.html', logs=logs)
+
 @app.route('/customer_blocked')
 def customer_blocked():
-    return render_template('customer_blocked.html')  # Render the blocked page template
+    return render_template('customer_blocked.html') 
 
 @app.route('/any_page_noaccess')
 def any_page_noaccess():
-    return render_template('any_page_noaccess.html')  # Render the blocked page template
+    return render_template('any_page_noaccess.html')  
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -43,6 +48,15 @@ def login():
         if user and user.check_password(password):
             session['user_id'] = user.id
             session['role'] = user.role
+            
+            log_entry = Log(
+                timestamp=datetime.now(),  
+                action="User logged in successfully", 
+                username=username  
+            )
+            db.session.add(log_entry)  
+            db.session.commit() 
+
             if user.role == 'admin':
                 return redirect(url_for('admin_dashboard'))
             elif user.role == 'service_professional':
@@ -50,21 +64,25 @@ def login():
             elif user.role == 'customer':
                 return redirect(url_for('customer_dashboard'))
         else:
+            log_entry = Log(
+                timestamp=datetime.now(),  
+                action="User denied access for incorrect username/password", 
+                username=username 
+            )
+            db.session.add(log_entry)  
+            db.session.commit()  
             return redirect(url_for('login'))
-    
+
     return render_template('login.html')
 
 @app.route('/logout')
 def logout():
-    # Clear the session
-    session.pop('user_id', None)  # Remove user_id from session
-    flash('You have been logged out.', 'success')  # Optional: flash a message
-    return redirect(url_for('home'))  # Redirect to the login page
+    session.pop('user_id', None)  
+    return redirect(url_for('home')) 
 
 @app.route('/customer_signup', methods=['GET', 'POST'])
 def customer_signup():
     if request.method == 'POST':
-        # Handle the signup logic here
         name = request.form['name']
         username = request.form['username']
         email = request.form['email']
@@ -73,7 +91,6 @@ def customer_signup():
         address = request.form['address']
         pincode = request.form['pincode']
 
-        # Create a new user instance
         new_user = User(
             name=name,
             username=username,
@@ -81,27 +98,24 @@ def customer_signup():
             phone_number=phone_number,
             address=address,
             pincode=pincode,
-            role='customer',  # Set role as customer
-            blocked=False,  # Default value
-            approval=None,  # Default value
-            profile_photo=None  # Default value
+            role='customer', 
+            blocked=False,  
+            approval=None,  
+            profile_photo=None 
         )
         
-        # Set the password
         new_user.set_password(password)
 
-        # Add the user to the session and commit
         db.session.add(new_user)
         db.session.commit()
 
-        return redirect(url_for('login'))  # Redirect to login or another page
+        return redirect(url_for('login'))  
 
-    # If GET request, render the signup form
-    return render_template('customer_signup.html')  # Ensure this template exists
+    return render_template('customer_signup.html')  
 
 @app.route('/service_professional_signup', methods=['GET', 'POST'])
 def service_professional_signup():
-    services = Service.query.all()  # Fetch all services
+    services = Service.query.all()  
 
     if request.method == 'POST':
         name = request.form['name']
@@ -114,7 +128,6 @@ def service_professional_signup():
         experience = request.form['experience']
         service_name = request.form['service_name']
 
-        # Create a new user instance
         new_user = User(
             name=name,
             username=username,
@@ -130,138 +143,172 @@ def service_professional_signup():
             profile_photo=None
         )
 
-        # Set the password
         new_user.set_password(password)
 
-        # Add the user to the session and commit
         db.session.add(new_user)
         db.session.commit()
 
-        flash('Signup successful! Please log in.', 'success')
         return redirect(url_for('home'))
 
-    return render_template('service_professional_signup.html', services=services)  # Pass services to the template
+    return render_template('service_professional_signup.html', services=services) 
 
 @app.route('/admin_dashboard')
 def admin_dashboard():
     services = Service.query.all()
-    professionals = User.query.filter_by(role='service_professional').all()  # Fetch professionals
+    professionals = User.query.filter_by(role='service_professional').all()  
     customers = User.query.filter_by(role='customer').all()
-    service_requests = ServiceRequest.query.all()  # Fetch all service requests
+    service_requests = ServiceRequest.query.all()  
     return render_template('admin_dashboard.html', services=services, professionals=professionals, customers=customers, service_requests=service_requests)
 
 @app.route('/admin/block_customer/<int:customer_id>', methods=['POST'])
 def block_customer(customer_id):
-    customer = User.query.get(customer_id)  # Assuming you have a Customer model
+    customer = User.query.get(customer_id) 
     if customer:
-        customer.blocked = 1  # Set blocked status
-        customer.approval = 0  # Set approval status
-        db.session.commit()  # Commit the changes
-    return redirect(url_for('admin_search'))  # Redirect back to the search page
+        customer.blocked = 1  
+        customer.approval = 0 
+        db.session.commit() 
+
+        log_entry = Log(
+            timestamp=datetime.now(),  
+            action=f"Customer '{customer.username}' blocked",  
+            username='admin'  
+        )
+        db.session.add(log_entry) 
+        db.session.commit() 
+    return redirect(url_for('admin_search'))  
 
 @app.route('/admin/unblock_customer/<int:customer_id>', methods=['POST'])
 def unblock_customer(customer_id):
-    customer = User.query.get(customer_id)  # Assuming you have a User model
+    customer = User.query.get(customer_id)  
     if customer:
-        customer.blocked = 0  # Set blocked status to 0 (unblocked)
-        db.session.commit()  # Commit the changes
-    return redirect(url_for('admin_search'))  # Redirect back to the search page
+        customer.blocked = 0 
+        db.session.commit() 
+
+        log_entry = Log(
+            timestamp=datetime.now(),  
+            action=f"Customer '{customer.username}' unblocked", 
+            username='admin'  
+        )
+        db.session.add(log_entry)  
+        db.session.commit()  
+    return redirect(url_for('admin_search'))  
 
 @app.route('/admin/block_customer1/<int:customer_id>', methods=['POST'])
 def block_customer1(customer_id):
-    customer = User.query.get(customer_id)  # Assuming you have a Customer model
+    customer = User.query.get(customer_id) 
     if customer:
-        customer.blocked = 1  # Set blocked status
-        customer.approval = 0  # Set approval status
-        db.session.commit()  # Commit the changes
-    return redirect(url_for('admin_dashboard'))  # Redirect back to the search page
+        customer.blocked = 1 
+        customer.approval = 0  
+        db.session.commit() 
+
+        log_entry = Log(
+            timestamp=datetime.now(),  
+            action=f"Customer '{customer.username}' blocked",  
+            username='admin'  
+        )
+        db.session.add(log_entry)  
+        db.session.commit()  
+    return redirect(url_for('admin_dashboard'))  
 
 @app.route('/admin/unblock_customer1/<int:customer_id>', methods=['POST'])
 def unblock_customer1(customer_id):
-    customer = User.query.get(customer_id)  # Assuming you have a User model
+    customer = User.query.get(customer_id)  
     if customer:
-        customer.blocked = 0  # Set blocked status to 0 (unblocked)
-        db.session.commit()  # Commit the changes
-    return redirect(url_for('admin_dashboard'))  # Redirect back to the search page
+        customer.blocked = 0 
+        db.session.commit()  
+
+        log_entry = Log(
+            timestamp=datetime.now(),  
+            action=f"Customer '{customer.username}' unblocked",  
+            username='admin'  
+        )
+        db.session.add(log_entry) 
+        db.session.commit()  
+    return redirect(url_for('admin_dashboard'))  
 
 @app.route('/admin/delete_customer/<int:customer_id>', methods=['POST'])
 def delete_customer(customer_id):
     customer = User.query.get(customer_id)
     if customer:
-        db.session.delete(customer)  # Remove the professional from the User table
+        db.session.delete(customer)
         db.session.commit()
-    else:
-        flash('Professional not found!', 'error')
     return redirect(url_for('admin_dashboard'))
 
 @app.route('/admin/accept_professional/<int:professional_id>', methods=['POST'])
 def accept_professional(professional_id):
-    professional = User.query.get(professional_id)  # Assuming you have a User model
+    professional = User.query.get(professional_id)  
     if professional:
-        professional.approval = True  # Set approval status to accepted
+        professional.approval = True  
         professional.blocked = False
-        db.session.commit()  # Commit the changes
-    return redirect(url_for('admin_search'))  # Redirect back to the search page
+        db.session.commit()  
+
+        log_entry = Log(
+            timestamp=datetime.now(), 
+            action=f"Professional '{professional.username}' approved",  
+            username='admin'  
+        )
+        db.session.add(log_entry)  
+        db.session.commit() 
+    return redirect(url_for('admin_search'))  
 
 @app.route('/admin/block_professional/<int:professional_id>', methods=['POST'])
 def block_professional(professional_id):
-    professional = User.query.get(professional_id)  # Assuming you have a User model
+    professional = User.query.get(professional_id)  
     if professional:
-        professional.blocked = True  # Set blocked status
+        professional.blocked = True  
         professional.approval = False
-        db.session.commit()  # Commit the changes
-    return redirect(url_for('admin_search'))  # Redirect back to the search page
+        db.session.commit() 
+
+        log_entry = Log(
+            timestamp=datetime.now(), 
+            action=f"Professional '{professional.username}' rejected",  
+            username='admin' 
+        )
+        db.session.add(log_entry)  
+        db.session.commit()  
+    return redirect(url_for('admin_search')) 
 
 @app.route('/edit_service_request/<int:request_id>', methods=['POST'])
 def edit_service_request(request_id):
-    request_to_edit = ServiceRequest.query.get(request_id)  # Assuming you have a ServiceRequest model
+    request_to_edit = ServiceRequest.query.get(request_id)  
     if request_to_edit:
-        # Convert the date string to a datetime object
         date_of_request_str = request.form['requested_date']
-        request_to_edit.date_of_request = datetime.strptime(date_of_request_str, '%Y-%m-%d').date()  # Adjust format if necessary
+        request_to_edit.date_of_request = datetime.strptime(date_of_request_str, '%Y-%m-%d').date() 
         request_to_edit.remarks = request.form['remarks']
-        db.session.commit()  # Commit the changes
-    return redirect(url_for('customer_dashboard'))  # Redirect back to the customer dashboard
+        db.session.commit()  
+    return redirect(url_for('customer_dashboard'))  
 
 @app.route('/service_professional_dashboard')
 def service_professional_dashboard():
     today = datetime.today().date()
     current_professional_id = session.get('user_id')
 
-    # Fetch the professional's details
     professional = User.query.filter_by(id=current_professional_id, role='service_professional').first()
     if not current_professional_id:
         return redirect(url_for('any_page_noaccess'))
-    # Check if the professional is approved and not blocked
     #add this once done:  and professional.approval == 1 and professional.blocked == 0
     if professional and professional.approval == 1 and professional.blocked == 0:
-        # Fetch today's active services (is_active = 1) that match the professional's service_name
         today_services = ServiceRequest.query.join(Service).filter(
             Service.is_active == True,
             ServiceRequest.service_status != 'Closed',
-            Service.name == professional.service_name  # Filter by the professional's service_name
+            Service.name == professional.service_name 
         ).all()
 
-        # Fetch closed services (is_active = 0) that match the professional's service_name
         closed_services = ServiceRequest.query.join(Service).filter(
             ServiceRequest.service_status == 'Closed',
-            Service.name == professional.service_name  # Filter by the professional's service_name
+            Service.name == professional.service_name  
         ).all()
 
         return render_template('service_professional_dashboard.html', today_services=today_services, closed_services=closed_services, professional=professional)
     else:
-        flash('Access denied: Your account is either blocked or not approved.', 'error')
-        return redirect(url_for('service_professional_blocked'))  # Redirect to home or another appropriate page
+        return redirect(url_for('service_professional_blocked'))  
 
 @app.route('/update_profile', methods=['POST'])
 def update_profile():
-    # Assuming you have a way to get the current professional's ID
     current_professional_id = session.get('user_id')
 
-    # Fetch the professional's details
     professional = User.query.get(current_professional_id)
 
-    # Update the professional's details
     professional.name = request.form['name']
     professional.email = request.form['email']
     professional.phone_number = request.form['phone_number']
@@ -270,31 +317,32 @@ def update_profile():
     professional.experience = request.form['experience']
     professional.service_name = request.form['service_name']
 
-    # Commit the changes to the database
     db.session.commit()
 
-    # Redirect back to the dashboard or show a success message
+    log_entry = Log(
+            timestamp=datetime.now(),  
+            action=f"Professional '{professional.username}' updated their profile",  
+            username=professional.username  
+        )
+    db.session.add(log_entry)  
+    db.session.commit()  
+
     return redirect(url_for('service_professional_dashboard'))
 
 @app.route('/update_profile_customer', methods=['POST'])
 def update_profile_customer():
-    # Assuming you have a way to get the current professional's ID
     current_customer_id = session.get('user_id')
 
-    # Fetch the professional's details
     customer = User.query.get(current_customer_id)
 
-    # Update the professional's details
     customer.name = request.form['name']
     customer.email = request.form['email']
     customer.phone_number = request.form['phone_number']
     customer.address = request.form['address']
     customer.pincode = request.form['pincode']
 
-    # Commit the changes to the database
     db.session.commit()
 
-    # Redirect back to the dashboard or show a success message
     return redirect(url_for('customer_dashboard'))
 
 @app.route('/accept_service/<int:service_id>', methods=['POST'])
@@ -304,38 +352,29 @@ def accept_service(service_id):
         service_request.professional_id = session.get('user_id')
         service_request.service_status = 'Assigned'  # Update status
         db.session.commit()
-        flash('Service request accepted successfully!', 'success')
-    else:
-        flash('Service request not found!', 'error')
     return redirect(url_for('service_professional_dashboard'))
 
 @app.route('/reject_service/<int:service_id>', methods=['POST'])
 def reject_service(service_id):
     service_request = ServiceRequest.query.get(service_id)
     if service_request:
-        db.session.delete(service_request)  # Remove the service request
+        db.session.delete(service_request) 
         db.session.commit()
-        flash('Service request rejected successfully!', 'success')
-    else:
-        flash('Service request not found!', 'error')
     return redirect(url_for('service_professional_dashboard'))
 
 @app.route('/customer_dashboard')
 def customer_dashboard():
     user_id = session.get('user_id')
-    user = User.query.get(user_id)  # Query the User table for the user
+    user = User.query.get(user_id)  
     if not user_id:
         return redirect(url_for('any_page_noaccess'))
-    # Check if the user is blocked
     if user and user.blocked == 1:
-        return redirect(url_for('customer_blocked'))  # Redirect to the blocked page
+        return redirect(url_for('customer_blocked'))  
 
     customer = User.query.filter_by(id=user_id, role='customer').first()
     
-    # Fetch all available services
-    services = Service.query.filter_by(is_active=True).all()  # Assuming you want only active services
+    services = Service.query.filter_by(is_active=True).all()  
 
-    # Fetch service history for the customer
     service_history = ServiceRequest.query \
         .join(Service, ServiceRequest.service_id == Service.id) \
         .join(User, ServiceRequest.customer_id == User.id) \
@@ -347,7 +386,7 @@ def customer_dashboard():
         .filter(User.rating != 0) \
         .order_by(User.rating.desc()) \
         .limit(10) \
-        .all()  # Fetch top 10 professionals based on rating
+        .all()  
 
     return render_template('customer_dashboard.html', customer=customer, services=services, service_history=service_history, user=user, top_rated_professionals=top_rated_professionals)
 
@@ -357,71 +396,74 @@ def book_service():
     date_of_request_str = request.form['date_of_request']
     remarks = request.form['remarks']
     
-    # Convert the date string to a datetime object
-    date_of_request = datetime.strptime(date_of_request_str, '%Y-%m-%d').date()  # Adjust format if necessary
+    date_of_request = datetime.strptime(date_of_request_str, '%Y-%m-%d').date()  
 
-    # Assuming you have a way to get the current customer's ID
     customer_id = session.get('user_id')
+    customer = User.query.get(customer_id)
     service = Service.query.filter_by(id=service_id).first()
     service_price = service.price
-    # Create a new service request
+
     new_request = ServiceRequest(
         service_id=service_id,
         customer_id=customer_id,
-        professional_id=None,  # Set to None as per your requirement
+        professional_id=None,  
         service_status='Requested',
         date_of_request=date_of_request,
         remarks=remarks,
         cost=service_price
     )
 
-    # Add to the session and commit to the database
     db.session.add(new_request)
     db.session.commit()
-
-    # Redirect back to the customer dashboard or show a success message
+    log_entry = Log(
+        timestamp=datetime.now(),  
+        action=f"Service '{service.name}' booked by customer '{customer.username}' successfully",
+        username=customer.username  
+    )
+    db.session.add(log_entry)  
+    db.session.commit()  
     return redirect(url_for('customer_dashboard'))
 
 @app.route('/book_service1', methods=['POST'])
 def book_service1():
     service_id = request.form['service_id']
+    service = Service.query.get(service_id)
     date_of_request_str = request.form['date_of_request']
     remarks = request.form['remarks']
     cost = request.form['payment_amount']
     
-    # Convert the date string to a datetime object
-    date_of_request = datetime.strptime(date_of_request_str, '%Y-%m-%d').date()  # Adjust format if necessary
+    date_of_request = datetime.strptime(date_of_request_str, '%Y-%m-%d').date() 
 
-    # Assuming you have a way to get the current customer's ID
     customer_id = session.get('user_id')
+    customer = User.query.get(customer_id)
 
-    # Create a new service request
     new_request = ServiceRequest(
         service_id=service_id,
         customer_id=customer_id,
-        professional_id=None,  # Set to None as per your requirement
+        professional_id=None,  
         service_status='Requested',
         date_of_request=date_of_request,
         remarks=remarks,
         cost=cost
     )
 
-    # Add to the session and commit to the database
     db.session.add(new_request)
     db.session.commit()
-
-    # Redirect back to the customer dashboard or show a success message
+    log_entry = Log(
+        timestamp=datetime.now(),  
+        action=f"Service '{service.name}' booked by customer '{customer.username}' successfully",
+        username=customer.username 
+    )
+    db.session.add(log_entry)  
+    db.session.commit()  
     return redirect(url_for('customer_dashboard'))
 
 @app.route('/customer_search', methods=['GET', 'POST'])
 def customer_search():
-    # Logic to handle the search
     user_id = session.get('user_id')
 
-    # Fetch unique service names for the dropdown
     unique_services = Service.query.distinct(Service.name).all()
 
-    # Fetch service history for the logged-in user
     service_history = ServiceRequest.query \
         .join(Service, ServiceRequest.service_id == Service.id) \
         .join(User, ServiceRequest.customer_id == User.id) \
@@ -464,45 +506,36 @@ def search_services():
 
 @app.route('/close_service_request/<int:request_id>', methods=['POST'])
 def close_service_request(request_id):
-    # Fetch the service request from the database
     request_to_close = ServiceRequest.query.get(request_id)
     if request_to_close:
-        request_to_close.service_status = 'Closed'  # Update the status
-        request_to_close.remarks = request.form.get('remarks', '')  # Capture remarks
+        request_to_close.service_status = 'Closed'  
+        request_to_close.remarks = request.form.get('remarks', '')  
         request_to_close.date_of_completion = datetime.now()
-        rating = request.form.get('rating')  # Get the rating from the form
+        rating = request.form.get('rating')  
 
         if rating:
-            rating_value = int(rating)  # Convert to int
-            # Fetch the professional associated with the service request
-            professional_id = request_to_close.professional_id  # Assuming you have this field
-            professional = User.query.get(professional_id)  # Fetch the professional from User table
+            rating_value = int(rating)  
+            professional_id = request_to_close.professional_id  
+            professional = User.query.get(professional_id)  
             
-            if professional:  # Check if the professional exists
-                # Update the professional's rating field
-                professional.rating = rating_value  # Update with the new rating
-                db.session.commit()  # Commit changes to User table
+            if professional: 
+                professional.rating = rating_value 
+                db.session.commit()  
 
-        db.session.commit()  # Commit changes to ServiceRequest table
-        flash('Service request closed successfully!', 'success')
-    else:
-        flash('Service request not found!', 'error')
+        db.session.commit()  
 
-    return redirect(url_for('customer_dashboard'))  # Redirect back to the dashboard
+    return redirect(url_for('customer_dashboard'))  
 
 
 @app.route('/close_service1/<int:service_id>', methods=['POST'])
 def close_service1(service_id):
     service_request = ServiceRequest.query.get(service_id)
     if service_request and service_request.service_status == 'Assigned':
-        service_request.service_status = 'Closed'  # Update status to Closed
-        service_request.date_of_completion = datetime.now()  # Record the completion date
-        db.session.commit()  # Commit the changes
-        flash('Service request closed successfully!', 'success')
-    else:
-        flash('Service request not found or cannot be closed.', 'danger')
+        service_request.service_status = 'Closed' 
+        service_request.date_of_completion = datetime.now()  
+        db.session.commit() 
 
-    return redirect(url_for('service_professional_dashboard'))  # Redirect back to the dashboard
+    return redirect(url_for('service_professional_dashboard'))  
 
 @app.route('/admin_login', methods=['GET', 'POST'])
 def admin_login():
@@ -515,7 +548,6 @@ def admin_login():
         address = request.form['address']
         pincode = request.form['pincode']
         
-        # Check if the email or username already exists
         new_user = User(
         name=name,
         username=username,
@@ -523,21 +555,18 @@ def admin_login():
         phone_number=phone_number,
         address=address,
         pincode=pincode,
-        role='admin',  # Set role as admin
-        blocked=False,  # Default value
-        approval=None,  # Default value
-        profile_photo=None  # Default value
+        role='admin',  
+        blocked=False, 
+        approval=None,  
+        profile_photo=None  
         )
     
-    # Set the password
         new_user.set_password(password)
 
-    # Add the user to the session and commit
         db.session.add(new_user)
         db.session.commit()
 
-        flash('Signup successful! Please log in.', 'success')
-        return redirect(url_for('home'))  # Redirect to admin login page
+        return redirect(url_for('home'))  
     
     return render_template('admin_login.html')
 
@@ -547,10 +576,9 @@ def new_service():
     description = request.form['description']
     base_price = request.form['base_price']
     time_required = request.form['time_required']
-    is_active = request.form['is_active'] == 'true'  # Convert to boolean
-    category = request.form['category']  # Get the category from the form
+    is_active = request.form['is_active'] == 'true'  
+    category = request.form['category']  
 
-    # Create a new service instance with all fields
     new_service = Service(
         name=name,
         description=description,
@@ -560,29 +588,9 @@ def new_service():
         category=category
     )
 
-    # Add the new service to the session
     db.session.add(new_service)
-    db.session.commit()  # Commit to save the service first
+    db.session.commit()  
 
-    # Now create a new service request for the newly created service
-    # Assuming you have a customer_id available (you might need to get this from the form or session)
-    # customer_id = 2  # Get the customer ID from the form
-    # service_request = ServiceRequest(
-    #     service_id=new_service.id,  # Use the ID of the newly created service
-    #     customer_id=customer_id,
-    #     professional_id=None,  # Set to None or the appropriate professional ID if applicable
-    #     date_of_request=datetime.now(),  # Set the current date and time
-    #     service_status='Requested',  # Initial status
-    #     remarks=None,  # Optional remarks
-    #     location=None,  # Optional location
-    #     cost=None  # Optional cost, can be set later
-    # )
-
-    # Add the new service request to the session
-    # db.session.add(service_request)
-    # db.session.commit()  # Commit to save the service request
-
-    # flash('New service and service request added successfully!')
     return redirect(url_for('admin_dashboard'))
 
 @app.route('/admin/edit_service/<int:service_id>', methods=['POST'])
@@ -593,13 +601,10 @@ def edit_service(service_id):
         service.description = request.form['description']
         service.price = request.form['base_price']
         service.time_required = request.form['time_required']
-        service.is_active = request.form['is_active'] == 'true'  # Convert to boolean
-        service.category = request.form['category']  # Update the category
+        service.is_active = request.form['is_active'] == 'true' 
+        service.category = request.form['category']  
 
         db.session.commit()
-        flash('Service updated successfully!')
-    else:
-        flash('Service not found!', 'error')
 
     return redirect(url_for('admin_dashboard'))
 
@@ -608,42 +613,46 @@ def delete_service(service_id):
     service = Service.query.get(service_id)
     db.session.delete(service)
     db.session.commit()
-    flash('Service deleted successfully!')
     return redirect(url_for('admin_dashboard'))
 
 @app.route('/admin/approve_professional/<int:professional_id>', methods=['POST'])
 def approve_professional(professional_id):
     professional = User.query.get(professional_id)
     if professional:
-        professional.approval = True  # Set approval to True
-        professional.blocked = False   # Unblock the professional
+        professional.approval = True 
+        professional.blocked = False 
         db.session.commit()
-        flash('Professional approved successfully!', 'success')
-    else:
-        flash('Professional not found!', 'error')
+        log_entry = Log(
+            timestamp=datetime.now(),  
+            action=f"Professional '{professional.username}' approved",  
+            username='admin' 
+        )
+        db.session.add(log_entry) 
+        db.session.commit()  
     return redirect(url_for('admin_dashboard'))
 
 @app.route('/admin/reject_professional/<int:professional_id>', methods=['POST'])
 def reject_professional(professional_id):
     professional = User.query.get(professional_id)
     if professional:
-        professional.blocked = True    # Block the professional
-        professional.approval = False   # Set approval to False
+        professional.blocked = True    
+        professional.approval = False   
         db.session.commit()
-        flash('Professional rejected successfully!', 'success')
-    else:
-        flash('Professional not found!', 'error')
+        log_entry = Log(
+            timestamp=datetime.now(),
+            action=f"Professional '{professional.username}' rejected", 
+            username='admin'  
+        )
+        db.session.add(log_entry)  
+        db.session.commit() 
     return redirect(url_for('admin_dashboard'))
 
 @app.route('/admin/delete_professional/<int:professional_id>', methods=['POST'])
 def delete_professional(professional_id):
     professional = User.query.get(professional_id)
     if professional:
-        db.session.delete(professional)  # Remove the professional from the User table
+        db.session.delete(professional)  
         db.session.commit()
-        flash('Professional deleted successfully!', 'success')
-    else:
-        flash('Professional not found!', 'error')
     return redirect(url_for('admin_dashboard'))
 
 @app.route('/admin/search', methods=['GET', 'POST'])
@@ -658,11 +667,11 @@ def admin_search():
         
         if search_type == 'service':
             if search_text.lower() == 'active':
-                results = Service.query.filter(Service.is_active == True).all()  # Fetch active services
+                results = Service.query.filter(Service.is_active == True).all()  
             elif search_text.lower() == 'inactive':
-                results = Service.query.filter(Service.is_active == False).all()  # Fetch inactive services
+                results = Service.query.filter(Service.is_active == False).all()  
             else:
-                results = Service.query.filter(Service.name.contains(search_text)).all()  # Fetch services by name
+                results = Service.query.filter(Service.name.contains(search_text)).all()  
 
         elif search_type == 'customer':
             results = User.query.filter(User.name.contains(search_text), User.role == 'customer').all()
@@ -672,13 +681,13 @@ def admin_search():
 
         elif search_type == 'service_request':
             if search_text.lower() == 'assigned':
-                results = ServiceRequest.query.filter(ServiceRequest.service_status == 'Assigned').all()  # Fetch assigned service requests
+                results = ServiceRequest.query.filter(ServiceRequest.service_status == 'Assigned').all()  
             elif search_text.lower() == 'closed':
-                results = ServiceRequest.query.filter(ServiceRequest.service_status == 'Closed').all()  # Fetch closed service requests
+                results = ServiceRequest.query.filter(ServiceRequest.service_status == 'Closed').all()  
             elif search_text.lower() == 'requested':
-                results = ServiceRequest.query.filter(ServiceRequest.service_status == 'Requested').all()  # Fetch closed service requests
+                results = ServiceRequest.query.filter(ServiceRequest.service_status == 'Requested').all() 
             else:
-                results = ServiceRequest.query.filter(ServiceRequest.remarks.contains(search_text)).all()  # Fetch service requests by remarks
+                results = ServiceRequest.query.filter(ServiceRequest.remarks.contains(search_text)).all() 
 
     return render_template('admin_search.html', results=results, search_type=search_type, search_text=search_text)
 
@@ -689,11 +698,9 @@ def service_professional_search():
         search_by = request.form['search_by']
         search_text = request.form['search_text']
 
-        # Fetch service requests based on the search criteria
         if search_by == 'date':
-            # Assuming search_text is in 'YYYY-MM-DD' format
             results = ServiceRequest.query.join(User, ServiceRequest.customer_id == User.id).filter(
-                func.date(ServiceRequest.date_of_request) == search_text  # Extract date part for comparison
+                func.date(ServiceRequest.date_of_request) == search_text  
             ).all()
         elif search_by == 'location':
             results = ServiceRequest.query.join(User, ServiceRequest.customer_id == User.id).filter(
@@ -708,25 +715,20 @@ def service_professional_search():
 
 @app.route('/admin_summary')
 def admin_summary():
-    # Fetch service requests data
     service_requests = ServiceRequest.query.all()
 
-    # Prepare data for charts
     service_counts = {}
     completion_counts = {'Requested': 0, 'Assigned': 0, 'Closed': 0}
     revenue_data = {}
 
     for request in service_requests:
-        # Count service statuses
         if request.service_status in completion_counts:
             completion_counts[request.service_status] += 1
 
-        # Calculate total revenue per service
         service_name = request.service.name
-        if request.cost is not None:  # Check if cost is not None
+        if request.cost is not None:  
             revenue_data[service_name] = revenue_data.get(service_name, 0) + request.cost
 
-    # Fetch services data
     services = Service.query.all()
     for service in services:
         service_name = service.name
@@ -735,35 +737,28 @@ def admin_summary():
     return render_template('admin_summary.html', 
                            service_counts=service_counts, 
                            completion_counts=completion_counts, 
-                           revenue_data=revenue_data)  # Pass revenue data to the template
+                           revenue_data=revenue_data)  
 
 @app.route('/service_professional_summary')
 def service_professional_summary():
-    # Get the logged-in professional's ID
     professional_id = session.get('user_id')
 
-    # Fetch service requests assigned to this professional
     service_requests = ServiceRequest.query.filter_by(professional_id=professional_id).all()
 
-    # Prepare data for charts
     completion_counts = {'Requested': 0, 'Assigned': 0, 'Closed': 0}
     customer_request_counts = {}
 
     for request in service_requests:
-        # Count service statuses
         if request.service_status in completion_counts:
             completion_counts[request.service_status] += 1
 
-        # Get the customer's name by fetching from the User table based on customer_id
         customer = User.query.filter_by(id=request.customer_id).first()
         customer_name = customer.name if customer else 'Unknown'
 
-        # Count the number of requests per customer for this service
         if customer_name not in customer_request_counts:
             customer_request_counts[customer_name] = 0
         customer_request_counts[customer_name] += 1
 
-    # Fetch the single service for the logged-in professional
     service_name = service_requests[0].service.name if service_requests else 'No service assigned'
 
     return render_template('service_professional_summary.html', 
@@ -774,34 +769,25 @@ def service_professional_summary():
 
 @app.route('/customer_summary')
 def customer_summary():
-    # Assuming you have a way to get the current customer's ID from the session
     customer_id = session.get('user_id')
     
     if not customer_id:
-        # Handle the case where the customer is not logged in or session expired
-        flash('Please log in to view your summary.', 'error')
         return redirect(url_for('login'))
 
-    # Fetch service requests data for the current customer only
     service_requests = ServiceRequest.query.filter_by(customer_id=customer_id).all()
 
-    # Prepare data for charts
     service_counts = {}
     completion_counts = {'Requested': 0, 'Assigned': 0, 'Closed': 0}
-    revenue_data = {}  # Dictionary to track revenue for each service
+    revenue_data = {} 
 
     for request in service_requests:
-        # Count service statuses for the logged-in customer
         if request.service_status in completion_counts:
             completion_counts[request.service_status] += 1
 
-        # Fetch the service name for each service request
-        service_name = request.service.name  # Assuming there is a relationship between ServiceRequest and Service
+        service_name = request.service.name  
 
-        # Count how many times each service was requested
         service_counts[service_name] = service_counts.get(service_name, 0) + 1
 
-        # Add the cost to revenue data if it's not None
         if request.cost is not None:
             revenue_data[service_name] = revenue_data.get(service_name, 0) + request.cost
 
