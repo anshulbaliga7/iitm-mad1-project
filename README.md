@@ -13,7 +13,7 @@ The schema consists of four tables: User, Services, ServiceRequest, and Logs.
 
 ### Different Pages and their routings
 HLD of all the pages and their routings based on conditions and edge cases.
-![Different Pages and their routings](different-pages-routing.png)
+![Different Pages and their routings](different-page-routing.png)
 
 
 ## Objectives
