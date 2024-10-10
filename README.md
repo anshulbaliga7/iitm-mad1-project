@@ -15,6 +15,10 @@ The schema consists of four tables: User, Services, ServiceRequest, and Logs.
 HLD of all the pages and their routings based on conditions and edge cases.
 ![Different Pages and their routings](different-page-routing.png)
 
+### UML Diagram of all roles available
+Admin, Customers and Service Professionals
+![UML Diagram of all roles available](uml-diagram.png)
+
 
 ## Objectives
 - **Objective 1**: Provide an intuitive platform for customers to request household services.

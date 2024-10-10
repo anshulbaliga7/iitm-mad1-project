@@ -350,7 +350,7 @@ def accept_service(service_id):
     service_request = ServiceRequest.query.get(service_id)
     if service_request:
         service_request.professional_id = session.get('user_id')
-        service_request.service_status = 'Assigned'  # Update status
+        service_request.service_status = 'Assigned' 
         db.session.commit()
     return redirect(url_for('service_professional_dashboard'))
 
@@ -507,24 +507,34 @@ def search_services():
 @app.route('/close_service_request/<int:request_id>', methods=['POST'])
 def close_service_request(request_id):
     request_to_close = ServiceRequest.query.get(request_id)
+    
     if request_to_close:
         request_to_close.service_status = 'Closed'  
         request_to_close.remarks = request.form.get('remarks', '')  
         request_to_close.date_of_completion = datetime.now()
+        
         rating = request.form.get('rating')  
-
+        
         if rating:
             rating_value = int(rating)  
-            professional_id = request_to_close.professional_id  
-            professional = User.query.get(professional_id)  
+            professional_id = request_to_close.professional_id
+            if professional_id:  
+                professional = User.query.get(professional_id)  
             
-            if professional: 
-                professional.rating = rating_value 
-                db.session.commit()  
-
+                if professional: 
+                    if professional.rating and professional.rating != 0:
+                        new_rating = round((professional.rating + rating_value) / 2)
+                    else:
+                        new_rating = rating_value
+                
+                    professional.rating = new_rating 
+                
+                    db.session.commit()  
+        
         db.session.commit()  
+    
+    return redirect(url_for('customer_dashboard')) 
 
-    return redirect(url_for('customer_dashboard'))  
 
 @app.route('/close_service1/<int:service_id>', methods=['POST'])
 def close_service1(service_id):
