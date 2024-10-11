@@ -472,38 +472,6 @@ def customer_search():
 
     return render_template('customer_search.html', services=unique_services, service_history=service_history)
 
-@app.route('/search_services', methods=['POST'])
-def search_services():
-    service_name = request.form.get('service_name')
-    search_text = request.form.get('search_text')
-    
-    # Initialize the query
-    user_id = 2  # Replace with actual user ID from session or context
-    query = Service.query
-
-    # If a service name is provided, filter by that service name
-    if service_name:
-        query = query.filter(Service.name == service_name)
-
-    # If search text is provided, filter by description
-    if search_text:
-        query = query.filter(Service.description.contains(search_text))
-
-    # Execute the query
-    search_results = query.all()
-
-    # Fetch service history
-    service_history = ServiceRequest.query \
-        .join(Service, ServiceRequest.service_id == Service.id) \
-        .join(User, ServiceRequest.customer_id == User.id) \
-        .filter(ServiceRequest.customer_id == user_id) \
-        .all()
-
-    # Get unique service names for the dropdown
-    unique_services = Service.query.distinct(Service.name).all()
-
-    return render_template('customer_search.html', services=unique_services, search_results=search_results, search_text=search_text, service_history=service_history)
-
 @app.route('/close_service_request/<int:request_id>', methods=['POST'])
 def close_service_request(request_id):
     request_to_close = ServiceRequest.query.get(request_id)
@@ -620,8 +588,33 @@ def edit_service(service_id):
 @app.route('/admin/delete_service/<int:service_id>', methods=['POST'])
 def delete_service(service_id):
     service = Service.query.get(service_id)
-    db.session.delete(service)
-    db.session.commit()
+    
+    if service:
+        service_name_to_delete = service.name
+        
+        related_requests = ServiceRequest.query.filter_by(service_id=service_id).all()
+        for request in related_requests:
+            db.session.delete(request)
+        
+        db.session.commit() 
+
+        db.session.delete(service)
+        db.session.commit()  
+
+        users_to_delete = User.query.filter_by(service_name=service_name_to_delete).all()
+        
+        for user in users_to_delete:
+            db.session.delete(user)
+        
+        db.session.commit()  
+        log_entry = Log(
+                timestamp=datetime.now(),  
+                action=f"Service '{service_name_to_delete}' deleted along with {len(related_requests)} requests and {len(users_to_delete)} professional",  
+                username='admin'  
+        )
+        db.session.add(log_entry) 
+        db.session.commit()
+    
     return redirect(url_for('admin_dashboard'))
 
 @app.route('/admin/approve_professional/<int:professional_id>', methods=['POST'])
