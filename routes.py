@@ -796,3 +796,29 @@ def customer_summary():
                            service_counts=service_counts, 
                            completion_counts=completion_counts,
                            revenue_data=revenue_data)
+
+@app.route('/search_services', methods=['POST'])
+def search_services():
+    service_name = request.form.get('service_name')
+    search_text = request.form.get('search_text')
+    
+    # Initialize the query
+    user_id = session.get('user_id')  # Replace with actual user ID from session or context
+    query = Service.query
+    # If a service name is provided, filter by that service name
+    if service_name:
+        query = query.filter(Service.name == service_name)
+    # If search text is provided, filter by description
+    if search_text:
+        query = query.filter(Service.description.contains(search_text))
+    # Execute the query
+    search_results = query.all()
+    # Fetch service history
+    service_history = ServiceRequest.query \
+        .join(Service, ServiceRequest.service_id == Service.id) \
+        .join(User, ServiceRequest.customer_id == User.id) \
+        .filter(ServiceRequest.customer_id == user_id) \
+        .all()
+    # Get unique service names for the dropdown
+    unique_services = Service.query.distinct(Service.name).all()
+    return render_template('customer_search.html', services=unique_services, search_results=search_results, search_text=search_text, service_history=service_history)
