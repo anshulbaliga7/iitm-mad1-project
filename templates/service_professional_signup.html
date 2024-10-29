@@ -86,7 +86,7 @@
         <div class="signup-box">
             <h2>Service Professional Signup</h2>
             <h4>Please fill the below details:</h4><br>
-            <form action="{{ url_for('service_professional_signup') }}" method="POST">
+            <form action="{{ url_for('service_professional_signup') }}" method="POST" enctype="multipart/form-data">
                 <div class="form-group">
                     <input type="text" class="form-control" id="name" name="name" placeholder="Name" required>
                 </div>
@@ -119,6 +119,10 @@
                             <option value="{{ service.name }}">{{ service.name }}</option>
                         {% endfor %}
                     </select>
+                </div>
+                <div class="form-group">
+                    <label for="documents">Upload Documents</label>
+                    <input type="file" class="form-control-file" id="documents" name="documents" required>
                 </div>
                 <button type="submit" class="btn btn-primary">Sign Up</button>
             </form>

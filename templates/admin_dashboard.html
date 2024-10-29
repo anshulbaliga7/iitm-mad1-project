@@ -236,6 +236,7 @@
                     <th>Service Name</th>
                     <th>Average Rating</th>
                     <th>Approval Status</th>
+                    <th>Document</th>
                     <th>Action</th>
                 </tr>
             </thead>
@@ -251,6 +252,15 @@
                     <td>{{ professional.service_name }}</td>
                     <td>{{ professional.rating }}</td>
                     <td>{{ 'Approved' if professional.approval == 1 else ('Rejected' if professional.approval == 0 else 'Pending') }}</td> 
+                    <td>
+                        {% if professional.document_filename %}
+                            <a href="{{ url_for('download_document', filename=professional.document_filename) }}">
+                                Download
+                            </a>
+                        {% else %}
+                            NA
+                        {% endif %}
+                    </td>
                     <td>
                         <form action="{{ url_for('approve_professional', professional_id=professional.id) }}" method="POST" style="display:inline;">
                             <button type="submit" class="btn btn-success btn-sm">Approve</button>

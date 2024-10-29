@@ -1,5 +1,5 @@
-from flask import render_template, request, redirect, url_for, session, flash
-from werkzeug.utils import secure_filename
+from flask import Flask, render_template, request, redirect, url_for, session, flash, send_from_directory
+from werkzeug.utils import secure_filename, safe_join
 import os
 from app import app
 from models import db, User, Service, ServiceRequest, Log
@@ -10,7 +10,8 @@ from sqlalchemy import func
 UPLOAD_FOLDER = 'uploads'
 ALLOWED_EXTENSIONS = {'pdf'}
 
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+app.config['UPLOAD_FOLDER'] = 'uploads'
+app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
@@ -35,6 +36,11 @@ def customer_blocked():
 @app.route('/any_page_noaccess')
 def any_page_noaccess():
     return render_template('any_page_noaccess.html')  
+
+@app.route('/download/<filename>')
+def download_document(filename):
+    return send_from_directory(app.config['UPLOAD_FOLDER'], filename, as_attachment=True)
+
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -115,7 +121,7 @@ def customer_signup():
 
 @app.route('/service_professional_signup', methods=['GET', 'POST'])
 def service_professional_signup():
-    services = Service.query.all()  
+    services = Service.query.all()
 
     if request.method == 'POST':
         name = request.form['name']
@@ -128,37 +134,70 @@ def service_professional_signup():
         experience = request.form['experience']
         service_name = request.form['service_name']
 
-        new_user = User(
-            name=name,
-            username=username,
-            email=email,
-            phone_number=phone_number,
-            address=address,
-            pincode=pincode,
-            experience=experience,
-            service_name=service_name,
-            role='service_professional',
-            blocked=False,
-            approval=None,
-            profile_photo=None
-        )
+        file = request.files.get('documents')
+        
+        if file and file.filename != '':
+            filename = secure_filename(file.filename)
+            filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
 
-        new_user.set_password(password)
+            file.save(filepath)
+            
+            new_user = User(
+                name=name,
+                username=username,
+                email=email,
+                phone_number=phone_number,
+                address=address,
+                pincode=pincode,
+                experience=experience,
+                service_name=service_name,
+                role='service_professional',
+                blocked=False,
+                approval=None,
+                profile_photo=None,
+                documents=filepath  
+            )
 
-        db.session.add(new_user)
-        db.session.commit()
+            new_user.set_password(password)
 
-        return redirect(url_for('home'))
+            db.session.add(new_user)
+            db.session.commit()
 
-    return render_template('service_professional_signup.html', services=services) 
+            log_entry = Log(
+                timestamp=datetime.now(),
+                action="Professional signed up successfully",
+                username=username
+            )
+            db.session.add(log_entry)
+            db.session.commit()
+
+            return redirect(url_for('home'))
+        
+        else:
+            return "File not provided", 400
+
+    return render_template('service_professional_signup.html', services=services)
 
 @app.route('/admin_dashboard')
 def admin_dashboard():
     services = Service.query.all()
-    professionals = User.query.filter_by(role='service_professional').all()  
+    professionals = User.query.filter_by(role='service_professional').all()
     customers = User.query.filter_by(role='customer').all()
-    service_requests = ServiceRequest.query.all()  
-    return render_template('admin_dashboard.html', services=services, professionals=professionals, customers=customers, service_requests=service_requests)
+    service_requests = ServiceRequest.query.all()
+
+    for professional in professionals:
+        if professional.documents:
+            professional.document_filename = os.path.basename(professional.documents)
+        else:
+            professional.document_filename = None
+
+    return render_template(
+        'admin_dashboard.html',
+        services=services,
+        professionals=professionals,
+        customers=customers,
+        service_requests=service_requests
+    )
 
 @app.route('/admin/block_customer/<int:customer_id>', methods=['POST'])
 def block_customer(customer_id):
